@@ -31,7 +31,7 @@ const ChatBot = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isTyping]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -43,94 +43,135 @@ const ChatBot = () => {
     const lowerMessage = userMessage.toLowerCase();
     const lang = i18n.language;
 
-    // System-specific questions
     // Dashboard/Stats
-    if (lowerMessage.includes('dashboard') || lowerMessage.includes('statistic') || lowerMessage.includes('overview') ||
-        lowerMessage.includes('ዳሽቦርድ') || lowerMessage.includes('ስታትስቲክስ')) {
+    if (
+      lowerMessage.includes('dashboard') || lowerMessage.includes('statistic') || lowerMessage.includes('overview') ||
+      lowerMessage.includes('ዳሽቦርድ') || lowerMessage.includes('ስታትስቲክስ') ||
+      lowerMessage.includes('daashboordii') || lowerMessage.includes('statistiksii')
+    ) {
       return t('chatbot.dashboard', { lng: lang });
     }
 
     // Add Book
-    if (lowerMessage.includes('add book') || lowerMessage.includes('new book') || lowerMessage.includes('create book') ||
-        lowerMessage.includes('መጽሐፍ ጨምር') || lowerMessage.includes('አዲስ መጽሐፍ')) {
+    if (
+      lowerMessage.includes('add book') || lowerMessage.includes('new book') || lowerMessage.includes('create book') ||
+      lowerMessage.includes('መጽሐፍ ጨምር') || lowerMessage.includes('አዲስ መጽሐፍ') ||
+      lowerMessage.includes('kutaa dabalchisi') || lowerMessage.includes('kutaa haaraa')
+    ) {
       return t('chatbot.addBook', { lng: lang });
     }
 
     // Edit Book
-    if (lowerMessage.includes('edit book') || lowerMessage.includes('update book') || lowerMessage.includes('modify book') ||
-        lowerMessage.includes('መጽሐፍ አርም') || lowerMessage.includes('መጽሐፍ አዘምን')) {
+    if (
+      lowerMessage.includes('edit book') || lowerMessage.includes('update book') || lowerMessage.includes('modify book') ||
+      lowerMessage.includes('መጽሐፍ አርም') || lowerMessage.includes('መጽሐፍ አዘምን') ||
+      lowerMessage.includes('kutaa gulaaluu') || lowerMessage.includes('jijjiir')
+    ) {
       return t('chatbot.editBook', { lng: lang });
     }
 
     // Delete Book
-    if (lowerMessage.includes('delete book') || lowerMessage.includes('remove book') ||
-        lowerMessage.includes('መጽሐፍ ሰርዝ') || lowerMessage.includes('መጽሐፍ አስወግድ')) {
+    if (
+      lowerMessage.includes('delete book') || lowerMessage.includes('remove book') ||
+      lowerMessage.includes('መጽሐፍ ሰርዝ') || lowerMessage.includes('መጽሐፍ አስወግድ') ||
+      lowerMessage.includes('kutaa haquu') || lowerMessage.includes('haqi')
+    ) {
       return t('chatbot.deleteBook', { lng: lang });
     }
 
     // Search Books
-    if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('look for') ||
-        lowerMessage.includes('ፈልግ') || lowerMessage.includes('አግኝ')) {
+    if (
+      lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('look for') ||
+      lowerMessage.includes('ፈልግ') || lowerMessage.includes('አግኝ') ||
+      lowerMessage.includes('barbaadi') || lowerMessage.includes('barbaaduu')
+    ) {
       return t('chatbot.search', { lng: lang });
     }
 
     // Add Member
-    if (lowerMessage.includes('add member') || lowerMessage.includes('new member') || lowerMessage.includes('register member') ||
-        lowerMessage.includes('አባል ጨምር') || lowerMessage.includes('አዲስ አባል')) {
+    if (
+      lowerMessage.includes('add member') || lowerMessage.includes('new member') || lowerMessage.includes('register member') ||
+      lowerMessage.includes('አባል ጨምር') || lowerMessage.includes('አዲስ አባል') ||
+      lowerMessage.includes('mataa dabalchisi') || lowerMessage.includes('galmeessi')
+    ) {
       return t('chatbot.addMember', { lng: lang });
     }
 
     // Member Status
-    if (lowerMessage.includes('member status') || lowerMessage.includes('active member') || lowerMessage.includes('inactive member') ||
-        lowerMessage.includes('አባል ሁኔታ') || lowerMessage.includes('ንቁ አባል')) {
+    if (
+      lowerMessage.includes('member status') || lowerMessage.includes('active member') || lowerMessage.includes('inactive member') ||
+      lowerMessage.includes('አባል ሁኔታ') || lowerMessage.includes('ንቁ አባል') ||
+      lowerMessage.includes('sadarkaa') || lowerMessage.includes('haala')
+    ) {
       return t('chatbot.memberStatus', { lng: lang });
     }
 
     // Borrowing Process
-    if (lowerMessage.includes('how to borrow') || lowerMessage.includes('borrow process') || lowerMessage.includes('borrowing steps') ||
-        lowerMessage.includes('እንዴት እብድር') || lowerMessage.includes('የብድር ሂደት')) {
+    if (
+      lowerMessage.includes('how to borrow') || lowerMessage.includes('borrow process') || lowerMessage.includes('borrowing') ||
+      lowerMessage.includes('እንዴት እብድር') || lowerMessage.includes('የብድር ሂደት') ||
+      lowerMessage.includes('birabiraach') || lowerMessage.includes('liqeess')
+    ) {
       return t('chatbot.borrowProcess', { lng: lang });
     }
 
     // Return Process
-    if (lowerMessage.includes('how to return') || lowerMessage.includes('return process') || lowerMessage.includes('returning steps') ||
-        lowerMessage.includes('እንዴት እመለስ') || lowerMessage.includes('የመመለሻ ሂደት')) {
+    if (
+      lowerMessage.includes('how to return') || lowerMessage.includes('return process') || lowerMessage.includes('returning') ||
+      lowerMessage.includes('እንዴት እመለስ') || lowerMessage.includes('የመመለሻ ሂደት') ||
+      lowerMessage.includes('deebis') || lowerMessage.includes('deebisuu')
+    ) {
       return t('chatbot.returnProcess', { lng: lang });
     }
 
     // Overdue/Fines
-    if (lowerMessage.includes('overdue') || lowerMessage.includes('fine') || lowerMessage.includes('late') ||
-        lowerMessage.includes('ዘግይቷል') || lowerMessage.includes('ቅጣት')) {
+    if (
+      lowerMessage.includes('overdue') || lowerMessage.includes('fine') || lowerMessage.includes('late') ||
+      lowerMessage.includes('ዘግይቷል') || lowerMessage.includes('ቅጣት') ||
+      lowerMessage.includes('adabbii') || lowerMessage.includes('yeroo darbe')
+    ) {
       return t('chatbot.overdue', { lng: lang });
     }
 
     // Categories
-    if (lowerMessage.includes('category') || lowerMessage.includes('categories') || lowerMessage.includes('book type') ||
-        lowerMessage.includes('ምድብ') || lowerMessage.includes('ምድቦች')) {
+    if (
+      lowerMessage.includes('category') || lowerMessage.includes('categories') || lowerMessage.includes('book type') ||
+      lowerMessage.includes('ምድብ') || lowerMessage.includes('ምድቦች') ||
+      lowerMessage.includes('garee') || lowerMessage.includes('gareewwan')
+    ) {
       return t('chatbot.categories', { lng: lang });
     }
 
     // Available Copies
-    if (lowerMessage.includes('available') || lowerMessage.includes('copies') || lowerMessage.includes('in stock') ||
-        lowerMessage.includes('ይገኛል') || lowerMessage.includes('ቅጂዎች')) {
+    if (
+      lowerMessage.includes('available') || lowerMessage.includes('copies') || lowerMessage.includes('in stock') ||
+      lowerMessage.includes('ይገኛል') || lowerMessage.includes('ቅጂዎች') ||
+      lowerMessage.includes('argamoo') || lowerMessage.includes('kopi')
+    ) {
       return t('chatbot.available', { lng: lang });
     }
 
     // ISBN
-    if (lowerMessage.includes('isbn') || lowerMessage.includes('book number') ||
-        lowerMessage.includes('ISBN')) {
+    if (
+      lowerMessage.includes('isbn') || lowerMessage.includes('book number') || lowerMessage.includes('lakkoofsa')
+    ) {
       return t('chatbot.isbn', { lng: lang });
     }
 
     // Greetings
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey') || 
-        lowerMessage.includes('ሰላም')) {
+    if (
+      lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey') || 
+      lowerMessage.includes('ሰላም') || lowerMessage.includes('akkam') || lowerMessage.includes('baga nagaan')
+    ) {
       return t('chatbot.greeting', { lng: lang });
     }
 
     // Help
-    if (lowerMessage.includes('help') || lowerMessage.includes('what can you do') || lowerMessage.includes('assist') ||
-        lowerMessage.includes('እርዳታ') || lowerMessage.includes('ምን ማድረግ እችላለሁ')) {
+    if (
+      lowerMessage.includes('help') || lowerMessage.includes('what can you do') || lowerMessage.includes('assist') ||
+      lowerMessage.includes('እርዳታ') || lowerMessage.includes('ምን ማድረግ እችላለሁ') ||
+      lowerMessage.includes('gargaarsa') || lowerMessage.includes('tumsa')
+    ) {
       return t('chatbot.help', { lng: lang });
     }
 
@@ -138,12 +179,12 @@ const ChatBot = () => {
     return t('chatbot.default', { lng: lang });
   };
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const sendMessageWithText = (text: string) => {
+    if (!text.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: input,
+      text,
       sender: 'user',
       timestamp: new Date(),
     };
@@ -152,17 +193,21 @@ const ChatBot = () => {
     setInput('');
     setIsTyping(true);
 
-    // Simulate bot thinking
+    // Simulate bot thinking with the actual sent text
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBotResponse(input),
+        text: getBotResponse(text),
         sender: 'bot',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botResponse]);
       setIsTyping(false);
-    }, 1000);
+    }, 600);
+  };
+
+  const handleSend = () => {
+    sendMessageWithText(input);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -181,8 +226,7 @@ const ChatBot = () => {
 
   const handleQuickReply = (key: string) => {
     const text = t(key, { lng: i18n.language });
-    setInput(text);
-    inputRef.current?.focus();
+    sendMessageWithText(text);
   };
 
   return (
@@ -192,6 +236,7 @@ const ChatBot = () => {
         className={`chatbot-toggle ${isOpen ? 'open' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Open chat"
+        title="AI Library Assistant"
       >
         {isOpen ? '✕' : '💬'}
       </button>
@@ -245,7 +290,7 @@ const ChatBot = () => {
           </div>
 
           {/* Quick Replies */}
-          {messages.length === 1 && (
+          {messages.length <= 2 && (
             <div className="chatbot-quick-replies">
               {quickReplies.map((reply, index) => (
                 <button
@@ -286,4 +331,3 @@ const ChatBot = () => {
 };
 
 export default ChatBot;
-

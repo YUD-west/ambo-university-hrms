@@ -11,7 +11,7 @@ const ConnectionStatus = () => {
       try {
         const response = await hrApi.getDashboardStats();
         setIsConnected(response.success);
-      } catch (error) {
+      } catch {
         setIsConnected(false);
       }
     };
@@ -33,5 +33,3 @@ const ConnectionStatus = () => {
 };
 
 export default ConnectionStatus;
-
-

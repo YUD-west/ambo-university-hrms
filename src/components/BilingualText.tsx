@@ -11,14 +11,9 @@ export default function BilingualText({ translationKey, className = '', showAll 
   const { i18n } = useTranslation();
 
   const getTrilingual = (key: string) => {
-    const currentLang = i18n.language;
-    i18n.changeLanguage('en');
-    const en = i18n.t(key);
-    i18n.changeLanguage('am');
-    const am = i18n.t(key);
-    i18n.changeLanguage('om');
-    const om = i18n.t(key);
-    i18n.changeLanguage(currentLang);
+    const en = i18n.t(key, { lng: 'en' });
+    const am = i18n.t(key, { lng: 'am' });
+    const om = i18n.t(key, { lng: 'om' });
     return { en, am, om };
   };
 
@@ -48,4 +43,3 @@ export default function BilingualText({ translationKey, className = '', showAll 
     </span>
   );
 }
-

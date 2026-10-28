@@ -5,83 +5,97 @@ import ChatBot from './ChatBot';
 import './FloatingActions.css';
 
 const FloatingActions = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [notifications] = useState([
-    { id: 1, message: t('floating.newBook', { lng: i18n.language }), time: '2m ago', read: false },
-    { id: 2, message: t('floating.bookReturned', { lng: i18n.language }), time: '5m ago', read: false },
-    { id: 3, message: t('floating.memberAdded', { lng: i18n.language }), time: '1h ago', read: true },
-  ]);
 
-  const isLibraryPage = location.pathname.startsWith('/library');
+  const notifications = [
+    { id: 1, message: t('floating.newBook'), time: '2m ago', read: false },
+    { id: 2, message: t('floating.bookReturned'), time: '5m ago', read: false },
+    { id: 3, message: t('floating.memberAdded'), time: '1h ago', read: true },
+  ];
+
+  const isLibraryPage = location.pathname.startsWith('/library') || location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
+      setShowScrollTop(window.scrollY > 200);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const triggerAddBook = () => {
+    if (location.pathname !== '/library/books') {
+      navigate('/library/books');
+      setTimeout(() => {
+        const btn = document.querySelector('.book-header .btn-primary') as HTMLElement;
+        if (btn) btn.click();
+      }, 300);
+    } else {
+      const btn = document.querySelector('.book-header .btn-primary') as HTMLElement;
+      if (btn) btn.click();
+    }
+  };
+
+  const triggerAddMember = () => {
+    if (location.pathname !== '/library/members') {
+      navigate('/library/members');
+      setTimeout(() => {
+        const btn = document.querySelector('.member-header .btn-primary') as HTMLElement;
+        if (btn) btn.click();
+      }, 300);
+    } else {
+      const btn = document.querySelector('.member-header .btn-primary') as HTMLElement;
+      if (btn) btn.click();
+    }
+  };
+
   const quickActions = [
     {
       id: 'books',
       icon: '📚',
-      label: t('floating.quickBooks', { lng: i18n.language }),
+      label: t('floating.quickBooks'),
       action: () => navigate('/library/books'),
       visible: isLibraryPage,
     },
     {
       id: 'members',
       icon: '👥',
-      label: t('floating.quickMembers', { lng: i18n.language }),
+      label: t('floating.quickMembers'),
       action: () => navigate('/library/members'),
       visible: isLibraryPage,
     },
     {
       id: 'borrow',
       icon: '📖',
-      label: t('floating.quickBorrow', { lng: i18n.language }),
+      label: t('floating.quickBorrow'),
       action: () => navigate('/library/borrowings'),
       visible: isLibraryPage,
     },
     {
       id: 'dashboard',
       icon: '📊',
-      label: t('floating.quickDashboard', { lng: i18n.language }),
+      label: t('floating.quickDashboard'),
       action: () => navigate('/library'),
       visible: isLibraryPage,
     },
     {
       id: 'addBook',
       icon: '➕',
-      label: t('floating.addBook', { lng: i18n.language }),
-      action: () => {
-        navigate('/library/books');
-        // Trigger add book modal (would need to pass event or use context)
-        setTimeout(() => {
-          const addButton = document.querySelector('.book-header .btn-primary') as HTMLElement;
-          if (addButton) addButton.click();
-        }, 500);
-      },
+      label: t('floating.addBook'),
+      action: triggerAddBook,
       visible: isLibraryPage,
     },
     {
       id: 'addMember',
       icon: '👤',
-      label: t('floating.addMember', { lng: i18n.language }),
-      action: () => {
-        navigate('/library/members');
-        setTimeout(() => {
-          const addButton = document.querySelector('.member-header .btn-primary') as HTMLElement;
-          if (addButton) addButton.click();
-        }, 500);
-      },
+      label: t('floating.addMember'),
+      action: triggerAddMember,
       visible: isLibraryPage,
     },
   ].filter(action => action.visible);
@@ -120,7 +134,7 @@ const FloatingActions = () => {
             setShowNotifications(!showNotifications);
             setIsMenuOpen(false);
           }}
-          title={t('floating.notifications', { lng: i18n.language })}
+          title={t('floating.notifications')}
         >
           <span>🔔</span>
           {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
@@ -135,10 +149,12 @@ const FloatingActions = () => {
               if (searchInput) {
                 searchInput.focus();
                 searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              } else {
+                navigate('/library/books');
               }
             }
           }}
-          title={t('floating.search', { lng: i18n.language })}
+          title={t('floating.search')}
         >
           <span>🔍</span>
         </button>
@@ -148,7 +164,7 @@ const FloatingActions = () => {
           <button
             className="floating-action-btn scroll-top-btn visible"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            title={t('floating.scrollTop', { lng: i18n.language })}
+            title={t('floating.scrollTop')}
           >
             <span>⬆️</span>
           </button>
@@ -158,7 +174,7 @@ const FloatingActions = () => {
         <button
           className="floating-action-btn main-btn"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
+          aria-label="Toggle quick menu"
         >
           <span className={`menu-icon ${isMenuOpen ? 'open' : ''}`}>
             <span></span>
@@ -172,7 +188,7 @@ const FloatingActions = () => {
       {showNotifications && (
         <div className="notifications-panel">
           <div className="notifications-header">
-            <h3>{t('floating.notifications', { lng: i18n.language })}</h3>
+            <h3>{t('floating.notifications')}</h3>
             <button
               className="close-notifications"
               onClick={() => setShowNotifications(false)}
@@ -183,7 +199,7 @@ const FloatingActions = () => {
           <div className="notifications-list">
             {notifications.length === 0 ? (
               <div className="no-notifications">
-                {t('floating.noNotifications', { lng: i18n.language })}
+                {t('floating.noNotifications')}
               </div>
             ) : (
               notifications.map((notification) => (
@@ -209,4 +225,3 @@ const FloatingActions = () => {
 };
 
 export default FloatingActions;
-

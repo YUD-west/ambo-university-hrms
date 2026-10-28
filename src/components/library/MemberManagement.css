@@ -1,14 +1,28 @@
 .member-management {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 2.5rem 2rem;
+  max-width: 1600px;
   margin: 0 auto;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .member-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border);
   flex-wrap: wrap;
   gap: 1.5rem;
 }
@@ -26,28 +40,32 @@
   display: flex;
   gap: 1rem;
   margin-bottom: 2.5rem;
-  align-items: stretch;
+  align-items: center;
+  background: var(--bg-primary);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
 .search-bar input {
   flex: 1;
   min-width: 250px;
-  padding: 1rem 1.25rem;
+  padding: 0.875rem 1.25rem;
   border: 2px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: var(--bg-primary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-secondary);
   color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
 }
 
 .search-bar input:focus {
   outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
+  border-color: var(--primary);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
 .search-bar input::placeholder {
@@ -57,7 +75,7 @@
 .members-table-container {
   background: var(--bg-primary);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   animation: fadeIn 0.4s ease;
@@ -66,6 +84,7 @@
 .members-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px;
 }
 
 .members-table thead {
@@ -90,7 +109,7 @@
 
 .members-table tbody tr:hover {
   background-color: var(--bg-hover);
-  transform: scale(1.01);
+  transform: scale(1.005);
   box-shadow: var(--shadow-sm);
 }
 
@@ -331,3 +350,21 @@
   margin-top: 2rem;
 }
 
+@media (max-width: 768px) {
+  .member-management {
+    padding: 1.5rem 1rem;
+  }
+
+  .member-header h1 {
+    font-size: 2rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+}
