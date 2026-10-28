@@ -10,12 +10,12 @@ interface Message {
 }
 
 const ChatBot = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: t('chatbot.welcome', { lng: i18n.language }),
+      text: 'Hello! I am your Ambo University HR & Employee Portal Assistant. How can I help you today with forms, attendance, leaves, or employee records?',
       sender: 'bot',
       timestamp: new Date(),
     },
@@ -40,150 +40,145 @@ const ChatBot = () => {
   }, [isOpen]);
 
   const getBotResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
+    const lower = userMessage.toLowerCase();
     const lang = i18n.language;
 
-    // Dashboard/Stats
+    // Life History Form
     if (
-      lowerMessage.includes('dashboard') || lowerMessage.includes('statistic') || lowerMessage.includes('overview') ||
-      lowerMessage.includes('ዳሽቦርድ') || lowerMessage.includes('ስታትስቲክስ') ||
-      lowerMessage.includes('daashboordii') || lowerMessage.includes('statistiksii')
+      lower.includes('life history') || lower.includes('personal info') || lower.includes('form') ||
+      lower.includes('የሕይወት ታሪክ') || lower.includes('ቅጽ') || lower.includes('unka jireenya')
     ) {
-      return t('chatbot.dashboard', { lng: lang });
+      if (lang === 'am') {
+        return 'የሕይወት ታሪክ ቅጽ ለመሙላት: ወደ "Life History Form" ገጽ ይሂዱ፣ የግል፣ የቤተሰብ፣ የትምህርትና የስራ ልምድ መረጃዎችን አስገብተው "Submit" የሚለውን ይጫኑ።';
+      }
+      if (lang === 'om') {
+        return 'Unka Seenaa Jireenyaa guutuuf: Fuula "Life History Form" deemi, odeeffannoo dhuunfaa, maatii, barnoota fi muuxannoo hojii guuti ergi.';
+      }
+      return 'To complete the Life History Form, navigate to the "Life History Form" link from the top navigation or home screen. Fill in personal, family, education, and employment history, then click submit.';
     }
 
-    // Add Book
+    // Social Security Form
     if (
-      lowerMessage.includes('add book') || lowerMessage.includes('new book') || lowerMessage.includes('create book') ||
-      lowerMessage.includes('መጽሐፍ ጨምር') || lowerMessage.includes('አዲስ መጽሐፍ') ||
-      lowerMessage.includes('kutaa dabalchisi') || lowerMessage.includes('kutaa haaraa')
+      lower.includes('social security') || lower.includes('pension') || lower.includes('ጡረታ') ||
+      lower.includes('ማህበራዊ ዋስትና') || lower.includes('nagahee hawaasummaa')
     ) {
-      return t('chatbot.addBook', { lng: lang });
+      if (lang === 'am') {
+        return 'የማህበራዊ ዋስትና (ጡረታ) ቅጽ ለመሙላት: ወደ "Social Security Form" ገጽ ይሂዱ፣ የጡረታ መለያ ቁጥርዎንና የስራ ዝርዝሮችን ሞልተው ያስገቡ።';
+      }
+      if (lang === 'om') {
+        return 'Unka Wabii Hawaasummaa guutuuf: Fuula "Social Security Form" deemi, lakkoofsa penshinii fi odeeffannoo hojii guuti ergi.';
+      }
+      return 'To fill out the Social Security Form, click on "Social Security Form" in the menu. Enter your pension scheme details, identification, and beneficiary information.';
     }
 
-    // Edit Book
+    // Leaves / Vacation
     if (
-      lowerMessage.includes('edit book') || lowerMessage.includes('update book') || lowerMessage.includes('modify book') ||
-      lowerMessage.includes('መጽሐፍ አርም') || lowerMessage.includes('መጽሐፍ አዘምን') ||
-      lowerMessage.includes('kutaa gulaaluu') || lowerMessage.includes('jijjiir')
+      lower.includes('leave') || lower.includes('vacation') || lower.includes('sick') ||
+      lower.includes('ፈቃድ') || lower.includes('እረፍት') || lower.includes('baha') || lower.includes('eeyyama')
     ) {
-      return t('chatbot.editBook', { lng: lang });
+      if (lang === 'am') {
+        return 'የእረፍት ወይም የህመም ፈቃድ ለመጠየቅ: ወደ HR Portal → "Leave Management" ይሂዱና "Add Leave Request" የሚለውን ይጫኑ። ፈቃዱ በአስተዳዳሪው ይጸድቃል።';
+      }
+      if (lang === 'om') {
+        return 'Eeyyama bahaa gaafachuuf: HR Portal → "Bulchiinsa Baha" deemi, "Add Leave Request" filadhu. Admin irraa mirkanaa\'a.';
+      }
+      return 'To request leave (vacation, sick, maternity, or personal), go to HR Portal → "Leave Management" and click "Add Leave Request". Your supervisor or HR admin will review and approve it.';
     }
 
-    // Delete Book
+    // Attendance
     if (
-      lowerMessage.includes('delete book') || lowerMessage.includes('remove book') ||
-      lowerMessage.includes('መጽሐፍ ሰርዝ') || lowerMessage.includes('መጽሐፍ አስወግድ') ||
-      lowerMessage.includes('kutaa haquu') || lowerMessage.includes('haqi')
+      lower.includes('attendance') || lower.includes('check in') || lower.includes('check out') || lower.includes('late') ||
+      lower.includes('መገኘት') || lower.includes('ሰዓት') || lower.includes('argamuu')
     ) {
-      return t('chatbot.deleteBook', { lng: lang });
+      if (lang === 'am') {
+        return 'የመገኘት መረጃን ለመመልከት: ወደ HR Portal → "Attendance" ይሂዱ። የቀኑን መገኘት፣ የዘገዩ ሰራተኞችንና የስራ ሰዓታትን ማየት ይችላሉ።';
+      }
+      if (lang === 'om') {
+        return 'Galmee argamuu ilaaluuf: HR Portal → "Argamuu" deemi. Guyyaa guyyaan kanneen argaman fi sa\'aatii hojii argachuun ni danda\'ama.';
+      }
+      return 'You can view and log employee attendance under HR Portal → "Attendance". It tracks daily presence, check-in/out times, and calculates total hours worked.';
     }
 
-    // Search Books
+    // Employees / Directory
     if (
-      lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('look for') ||
-      lowerMessage.includes('ፈልግ') || lowerMessage.includes('አግኝ') ||
-      lowerMessage.includes('barbaadi') || lowerMessage.includes('barbaaduu')
+      lower.includes('employee') || lower.includes('staff') || lower.includes('worker') ||
+      lower.includes('ሰራተኛ') || lower.includes('ሰራተኞች') || lower.includes('hojjetaa') || lower.includes('hojjettoota')
     ) {
-      return t('chatbot.search', { lng: lang });
+      if (lang === 'am') {
+        return 'የሰራተኞችን ዝርዝር ለመመልከት ወይም አዲስ ሰራተኛ ለመመዝገብ: ወደ HR Portal → "Employees" ይሂዱ።';
+      }
+      if (lang === 'om') {
+        return 'Tarree hojjettootaa ilaaluuf ykn hojjetaa haaraa galmeessuuf: HR Portal → "Hojjettoota" deemi.';
+      }
+      return 'To view the employee directory, search staff, or add new employees, visit HR Portal → "Employees". You can filter by name, department, or status.';
     }
 
-    // Add Member
+    // Departments
     if (
-      lowerMessage.includes('add member') || lowerMessage.includes('new member') || lowerMessage.includes('register member') ||
-      lowerMessage.includes('አባል ጨምር') || lowerMessage.includes('አዲስ አባል') ||
-      lowerMessage.includes('mataa dabalchisi') || lowerMessage.includes('galmeessi')
+      lower.includes('department') || lower.includes('division') || lower.includes('ክፍል') || lower.includes('ዲፓርትመንት') || lower.includes('garee')
     ) {
-      return t('chatbot.addMember', { lng: lang });
+      if (lang === 'am') {
+        return 'ክፍሎችን ለመመልከት ወይም ለማስተዳደር: ወደ HR Portal → "Departments" ይሂዱ። የበጀትና የሰራተኛ ቁጥር መረጃዎችን ያገኛሉ።';
+      }
+      if (lang === 'om') {
+        return 'Gareewwan ilaaluuf: HR Portal → "Gareewwan" deemi. Baajata fi baay\'ina hojjettootaa argatta.';
+      }
+      return 'Manage company/university departments under HR Portal → "Departments". View manager assignments, budgets, and team headcounts.';
     }
 
-    // Member Status
+    // Performance
     if (
-      lowerMessage.includes('member status') || lowerMessage.includes('active member') || lowerMessage.includes('inactive member') ||
-      lowerMessage.includes('አባል ሁኔታ') || lowerMessage.includes('ንቁ አባል') ||
-      lowerMessage.includes('sadarkaa') || lowerMessage.includes('haala')
+      lower.includes('performance') || lower.includes('review') || lower.includes('rating') ||
+      lower.includes('አፈጻጸም') || lower.includes('ግምገማ') || lower.includes('madaallii')
     ) {
-      return t('chatbot.memberStatus', { lng: lang });
+      if (lang === 'am') {
+        return 'የሰራተኞች የስራ አፈጻጸም ግምገማን ለመመልከት ወይም አዲስ ግምገማ ለማስገባት: ወደ HR Portal → "Performance" ይሂዱ።';
+      }
+      if (lang === 'om') {
+        return 'Madaallii hojii ilaaluuf: HR Portal → "Hojii" deemi. Sadarkaa fi yaada gamaaggamaa galchuu ni dandeessa.';
+      }
+      return 'Review employee evaluations, achievements, goals, and ratings under HR Portal → "Performance Management".';
     }
 
-    // Borrowing Process
+    // Admin
     if (
-      lowerMessage.includes('how to borrow') || lowerMessage.includes('borrow process') || lowerMessage.includes('borrowing') ||
-      lowerMessage.includes('እንዴት እብድር') || lowerMessage.includes('የብድር ሂደት') ||
-      lowerMessage.includes('birabiraach') || lowerMessage.includes('liqeess')
+      lower.includes('admin') || lower.includes('approve') || lower.includes('reject') ||
+      lower.includes('አስተዳዳሪ') || lower.includes('ማጽደቅ')
     ) {
-      return t('chatbot.borrowProcess', { lng: lang });
-    }
-
-    // Return Process
-    if (
-      lowerMessage.includes('how to return') || lowerMessage.includes('return process') || lowerMessage.includes('returning') ||
-      lowerMessage.includes('እንዴት እመለስ') || lowerMessage.includes('የመመለሻ ሂደት') ||
-      lowerMessage.includes('deebis') || lowerMessage.includes('deebisuu')
-    ) {
-      return t('chatbot.returnProcess', { lng: lang });
-    }
-
-    // Overdue/Fines
-    if (
-      lowerMessage.includes('overdue') || lowerMessage.includes('fine') || lowerMessage.includes('late') ||
-      lowerMessage.includes('ዘግይቷል') || lowerMessage.includes('ቅጣት') ||
-      lowerMessage.includes('adabbii') || lowerMessage.includes('yeroo darbe')
-    ) {
-      return t('chatbot.overdue', { lng: lang });
-    }
-
-    // Categories
-    if (
-      lowerMessage.includes('category') || lowerMessage.includes('categories') || lowerMessage.includes('book type') ||
-      lowerMessage.includes('ምድብ') || lowerMessage.includes('ምድቦች') ||
-      lowerMessage.includes('garee') || lowerMessage.includes('gareewwan')
-    ) {
-      return t('chatbot.categories', { lng: lang });
-    }
-
-    // Available Copies
-    if (
-      lowerMessage.includes('available') || lowerMessage.includes('copies') || lowerMessage.includes('in stock') ||
-      lowerMessage.includes('ይገኛል') || lowerMessage.includes('ቅጂዎች') ||
-      lowerMessage.includes('argamoo') || lowerMessage.includes('kopi')
-    ) {
-      return t('chatbot.available', { lng: lang });
-    }
-
-    // ISBN
-    if (
-      lowerMessage.includes('isbn') || lowerMessage.includes('book number') || lowerMessage.includes('lakkoofsa')
-    ) {
-      return t('chatbot.isbn', { lng: lang });
+      if (lang === 'am') {
+        return 'የአስተዳዳሪ ገጽ ለመግባት: ወደ "Admin Panel" ይሂዱ። በመጠባበቅ ላይ ያሉ ቅጾችን ማጽደቅ ወይም ውድቅ ማድረግ ይችላሉ።';
+      }
+      if (lang === 'om') {
+        return 'Fuula Admin seenuuf: "Admin Panel" deemi. Unkaalee eeggatan mirkaneessuu ykn dhiisuu dandeessa.';
+      }
+      return 'HR Administrators can view, review, approve, or reject pending Life History and Social Security form submissions from the "Admin Panel".';
     }
 
     // Greetings
     if (
-      lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey') || 
-      lowerMessage.includes('ሰላም') || lowerMessage.includes('akkam') || lowerMessage.includes('baga nagaan')
+      lower.includes('hello') || lower.includes('hi') || lower.includes('hey') || 
+      lower.includes('ሰላም') || lower.includes('akkam')
     ) {
-      return t('chatbot.greeting', { lng: lang });
+      if (lang === 'am') return 'ሰላም! የአምቦ ዩኒቨርሲቲ የሰው ኃይል አስተዳደር ረዳት ነኝ። በምን ልርዳዎት?';
+      if (lang === 'om') return 'Akkam! Ani tumsa sirna bulchiinsa humna namaa Yunivarsiitii Ambooti. Maal si gargaaru?';
+      return 'Hello! I am the Ambo University HRMS Assistant. How can I assist you with employee forms, leave requests, attendance, or department management?';
     }
 
-    // Help
-    if (
-      lowerMessage.includes('help') || lowerMessage.includes('what can you do') || lowerMessage.includes('assist') ||
-      lowerMessage.includes('እርዳታ') || lowerMessage.includes('ምን ማድረግ እችላለሁ') ||
-      lowerMessage.includes('gargaarsa') || lowerMessage.includes('tumsa')
-    ) {
-      return t('chatbot.help', { lng: lang });
+    // Default
+    if (lang === 'am') {
+      return 'ስለ ቅጾች አሞላል፣ ፈቃድ መጠየቅ፣ መገኘት፣ ሰራተኞች ወይም አስተዳዳሪ ፓነል ማንኛውንም ጥያቄ መጠየቅ ይችላሉ።';
     }
-
-    // Default response
-    return t('chatbot.default', { lng: lang });
+    if (lang === 'om') {
+      return 'Waa\'ee unkaalee, eeyyama bahaa, argamuu, hojjettootaa, fi paaneelii admin gaafachuu dandeessa.';
+    }
+    return 'I can assist you with:\n• Life History & Social Security forms\n• Employee records & directory\n• Requesting and approving leaves\n• Daily attendance tracking\n• Performance evaluations\n• Admin panel management\n\nWhat would you like to know?';
   };
 
   const sendMessageWithText = (text: string) => {
     if (!text.trim()) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: Math.random().toString(36).substring(2, 9),
       text,
       sender: 'user',
       timestamp: new Date(),
@@ -193,17 +188,16 @@ const ChatBot = () => {
     setInput('');
     setIsTyping(true);
 
-    // Simulate bot thinking with the actual sent text
     setTimeout(() => {
       const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: Math.random().toString(36).substring(2, 9),
         text: getBotResponse(text),
         sender: 'bot',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botResponse]);
       setIsTyping(false);
-    }, 600);
+    }, 500);
   };
 
   const handleSend = () => {
@@ -218,38 +212,31 @@ const ChatBot = () => {
   };
 
   const quickReplies = [
-    { key: 'chatbot.quickAddBook', icon: '➕' },
-    { key: 'chatbot.quickSearch', icon: '🔍' },
-    { key: 'chatbot.quickBorrow', icon: '📖' },
-    { key: 'chatbot.quickHelp', icon: '❓' },
+    { label: '📋 Life History Form', query: 'How to fill Life History Form?' },
+    { label: '📅 Request Leave', query: 'How to request a leave?' },
+    { label: '⏰ Check Attendance', query: 'How does attendance tracking work?' },
+    { label: '⚙️ Admin Panel', query: 'What can I do in Admin Panel?' },
   ];
-
-  const handleQuickReply = (key: string) => {
-    const text = t(key, { lng: i18n.language });
-    sendMessageWithText(text);
-  };
 
   return (
     <>
-      {/* Chat Button */}
       <button
         className={`chatbot-toggle ${isOpen ? 'open' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Open chat"
-        title="AI Library Assistant"
+        aria-label="Open HR Assistant chat"
+        title="HR Assistant"
       >
         {isOpen ? '✕' : '💬'}
       </button>
 
-      {/* Chat Window */}
       {isOpen && (
         <div className="chatbot-container">
           <div className="chatbot-header">
             <div className="chatbot-header-content">
-              <span className="chatbot-icon">🤖</span>
+              <span className="chatbot-icon">🏛️</span>
               <div>
-                <h3>{t('chatbot.title', { lng: i18n.language })}</h3>
-                <span className="chatbot-status">{t('chatbot.online', { lng: i18n.language })}</span>
+                <h3>HR Portal Assistant</h3>
+                <span className="chatbot-status">Online • Ambo University</span>
               </div>
             </div>
             <button
@@ -289,17 +276,15 @@ const ChatBot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Replies */}
           {messages.length <= 2 && (
             <div className="chatbot-quick-replies">
               {quickReplies.map((reply, index) => (
                 <button
                   key={index}
                   className="quick-reply-btn"
-                  onClick={() => handleQuickReply(reply.key)}
+                  onClick={() => sendMessageWithText(reply.query)}
                 >
-                  <span>{reply.icon}</span>
-                  <span>{t(reply.key, { lng: i18n.language })}</span>
+                  <span>{reply.label}</span>
                 </button>
               ))}
             </div>
@@ -310,7 +295,7 @@ const ChatBot = () => {
               ref={inputRef}
               type="text"
               className="chatbot-input"
-              placeholder={t('chatbot.placeholder', { lng: i18n.language })}
+              placeholder="Ask HR Assistant..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}

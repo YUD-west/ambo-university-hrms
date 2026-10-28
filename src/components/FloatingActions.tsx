@@ -13,12 +13,10 @@ const FloatingActions = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const notifications = [
-    { id: 1, message: t('floating.newBook'), time: '2m ago', read: false },
-    { id: 2, message: t('floating.bookReturned'), time: '5m ago', read: false },
-    { id: 3, message: t('floating.memberAdded'), time: '1h ago', read: true },
+    { id: 1, message: t('floating.newEmployee', 'New employee onboarded to Engineering'), time: '10m ago', read: false },
+    { id: 2, message: t('floating.leaveRequested', 'Leave request submitted by John Doe'), time: '30m ago', read: false },
+    { id: 3, message: t('floating.performanceOpen', 'Q4 Performance Review period opened'), time: '2h ago', read: true },
   ];
-
-  const isLibraryPage = location.pathname.startsWith('/library') || location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,76 +27,56 @@ const FloatingActions = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const triggerAddBook = () => {
-    if (location.pathname !== '/library/books') {
-      navigate('/library/books');
-      setTimeout(() => {
-        const btn = document.querySelector('.book-header .btn-primary') as HTMLElement;
-        if (btn) btn.click();
-      }, 300);
-    } else {
-      const btn = document.querySelector('.book-header .btn-primary') as HTMLElement;
-      if (btn) btn.click();
-    }
-  };
-
-  const triggerAddMember = () => {
-    if (location.pathname !== '/library/members') {
-      navigate('/library/members');
-      setTimeout(() => {
-        const btn = document.querySelector('.member-header .btn-primary') as HTMLElement;
-        if (btn) btn.click();
-      }, 300);
-    } else {
-      const btn = document.querySelector('.member-header .btn-primary') as HTMLElement;
-      if (btn) btn.click();
-    }
-  };
-
   const quickActions = [
-    {
-      id: 'books',
-      icon: '📚',
-      label: t('floating.quickBooks'),
-      action: () => navigate('/library/books'),
-      visible: isLibraryPage,
-    },
-    {
-      id: 'members',
-      icon: '👥',
-      label: t('floating.quickMembers'),
-      action: () => navigate('/library/members'),
-      visible: isLibraryPage,
-    },
-    {
-      id: 'borrow',
-      icon: '📖',
-      label: t('floating.quickBorrow'),
-      action: () => navigate('/library/borrowings'),
-      visible: isLibraryPage,
-    },
     {
       id: 'dashboard',
       icon: '📊',
-      label: t('floating.quickDashboard'),
-      action: () => navigate('/library'),
-      visible: isLibraryPage,
+      label: t('nav.dashboard', 'HR Dashboard'),
+      action: () => navigate('/hr/dashboard'),
     },
     {
-      id: 'addBook',
-      icon: '➕',
-      label: t('floating.addBook'),
-      action: triggerAddBook,
-      visible: isLibraryPage,
+      id: 'employees',
+      icon: '👥',
+      label: t('nav.employees', 'Employees'),
+      action: () => navigate('/hr/employees'),
     },
     {
-      id: 'addMember',
-      icon: '👤',
-      label: t('floating.addMember'),
-      action: triggerAddMember,
-      visible: isLibraryPage,
+      id: 'departments',
+      icon: '🏢',
+      label: t('nav.departments', 'Departments'),
+      action: () => navigate('/hr/departments'),
     },
-  ].filter(action => action.visible);
+    {
+      id: 'leaves',
+      icon: '📅',
+      label: t('nav.leaveManagement', 'Leave Requests'),
+      action: () => navigate('/hr/leaves'),
+    },
+    {
+      id: 'attendance',
+      icon: '⏰',
+      label: t('nav.attendance', 'Attendance'),
+      action: () => navigate('/hr/attendance'),
+    },
+    {
+      id: 'lifeHistory',
+      icon: '📋',
+      label: t('forms.lifeHistory', 'Life History Form'),
+      action: () => navigate('/form'),
+    },
+    {
+      id: 'socialSecurity',
+      icon: '🛡️',
+      label: t('forms.socialSecurity', 'Social Security Form'),
+      action: () => navigate('/social-security'),
+    },
+    {
+      id: 'admin',
+      icon: '⚙️',
+      label: t('nav.admin', 'Admin Panel'),
+      action: () => navigate('/admin'),
+    },
+  ];
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -117,7 +95,7 @@ const FloatingActions = () => {
                   action.action();
                   setIsMenuOpen(false);
                 }}
-                style={{ animationDelay: `${index * 0.05}s` }}
+                style={{ animationDelay: `${index * 0.04}s` }}
                 title={action.label}
               >
                 <span className="action-icon">{action.icon}</span>
@@ -134,27 +112,27 @@ const FloatingActions = () => {
             setShowNotifications(!showNotifications);
             setIsMenuOpen(false);
           }}
-          title={t('floating.notifications')}
+          title="Notifications"
         >
           <span>🔔</span>
           {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
         </button>
 
-        {/* Search Button */}
+        {/* Search / Nav Button */}
         <button
           className="floating-action-btn search-btn"
           onClick={() => {
-            if (isLibraryPage) {
-              const searchInput = document.querySelector('.search-bar input') as HTMLInputElement;
+            if (location.pathname.startsWith('/hr')) {
+              const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
               if (searchInput) {
                 searchInput.focus();
                 searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              } else {
-                navigate('/library/books');
               }
+            } else {
+              navigate('/hr/employees');
             }
           }}
-          title={t('floating.search')}
+          title="Search"
         >
           <span>🔍</span>
         </button>
@@ -164,7 +142,7 @@ const FloatingActions = () => {
           <button
             className="floating-action-btn scroll-top-btn visible"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            title={t('floating.scrollTop')}
+            title="Scroll to Top"
           >
             <span>⬆️</span>
           </button>
@@ -174,7 +152,7 @@ const FloatingActions = () => {
         <button
           className="floating-action-btn main-btn"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle quick menu"
+          aria-label="Toggle HR quick menu"
         >
           <span className={`menu-icon ${isMenuOpen ? 'open' : ''}`}>
             <span></span>
@@ -188,7 +166,7 @@ const FloatingActions = () => {
       {showNotifications && (
         <div className="notifications-panel">
           <div className="notifications-header">
-            <h3>{t('floating.notifications')}</h3>
+            <h3>HR Notifications</h3>
             <button
               className="close-notifications"
               onClick={() => setShowNotifications(false)}
@@ -199,7 +177,7 @@ const FloatingActions = () => {
           <div className="notifications-list">
             {notifications.length === 0 ? (
               <div className="no-notifications">
-                {t('floating.noNotifications')}
+                No notifications
               </div>
             ) : (
               notifications.map((notification) => (

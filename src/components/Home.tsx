@@ -12,12 +12,14 @@ const Home = () => {
         <div className="nav-container">
           <div className="logo">
             <h2>Federal Government Employees</h2>
-            <p>Federal Government Employees</p>
+            <p>Federal Government Employees Portal</p>
           </div>
           <div className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
             <a href="#home" onClick={() => setIsMenuOpen(false)}>Home</a>
             <a href="#about" onClick={() => setIsMenuOpen(false)}>About</a>
             <a href="#services" onClick={() => setIsMenuOpen(false)}>Services</a>
+            <Link to="/hr" onClick={() => setIsMenuOpen(false)}>HR Portal</Link>
+            <Link to="/admin" onClick={() => setIsMenuOpen(false)}>Admin</Link>
             <a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</a>
           </div>
           <button 
@@ -39,7 +41,7 @@ const Home = () => {
             <h1 className="hero-title">
               <span className="gradient-text">Life History Form</span>
             </h1>
-            <h2 className="hero-subtitle">Life History Form</h2>
+            <h2 className="hero-subtitle">Life History & Employee Information System</h2>
             <p className="hero-description">
               Complete your employee life history form with ease. A comprehensive digital solution 
               for federal government employees to manage their personal and professional information.
@@ -57,8 +59,8 @@ const Home = () => {
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </Link>
-              <Link to="/library" className="btn btn-primary">
-                Library Management
+              <Link to="/hr" className="btn btn-primary">
+                HR Management
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -184,20 +186,20 @@ const Home = () => {
         <div className="container">
           <div className="stats-grid">
             <div className="stat-item">
-              <div className="stat-number" data-target="10000">0</div>
+              <div className="stat-number" data-target="10000">10,000+</div>
               <div className="stat-label">Forms Completed</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number" data-target="5000">0</div>
-              <div className="stat-label">Active Users</div>
+              <div className="stat-number" data-target="5000">5,000+</div>
+              <div className="stat-label">Active Employees</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number" data-target="99">0</div>
-              <div className="stat-label">% Satisfaction</div>
+              <div className="stat-number" data-target="99">99%</div>
+              <div className="stat-label">Satisfaction Rate</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number" data-target="24">0</div>
-              <div className="stat-label">Support Hours</div>
+              <div className="stat-number" data-target="24">24/7</div>
+              <div className="stat-label">Portal Availability</div>
             </div>
           </div>
         </div>
@@ -255,7 +257,7 @@ const Home = () => {
           <div className="footer-content">
             <div className="footer-section">
               <h3>Federal Government Employees</h3>
-              <p>Federal Government Employees Portal</p>
+              <p>Federal Government Employees Portal & HRMS</p>
             </div>
             <div className="footer-section">
               <h4>Quick Links</h4>
@@ -263,17 +265,16 @@ const Home = () => {
                 <li><a href="#home">Home</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#services">Services</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><Link to="/hr">HR Dashboard</Link></li>
               </ul>
             </div>
             <div className="footer-section">
               <h4>Resources</h4>
               <ul>
                 <li><Link to="/form">Life History Form</Link></li>
-                <li><Link to="/library">Library Management</Link></li>
-                <li><a href="#">Help Center</a></li>
-                <li><a href="#">Documentation</a></li>
-                <li><a href="#">FAQ</a></li>
+                <li><Link to="/social-security">Social Security Form</Link></li>
+                <li><Link to="/hr">HR Management Portal</Link></li>
+                <li><Link to="/admin">Admin Panel</Link></li>
               </ul>
             </div>
             <div className="footer-section">
@@ -296,4 +297,3 @@ const Home = () => {
 };
 
 export default Home;
-

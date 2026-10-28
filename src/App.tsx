@@ -10,11 +10,6 @@ import DepartmentManagement from './components/DepartmentManagement';
 import AttendanceManagement from './components/AttendanceManagement';
 import LeaveManagement from './components/LeaveManagement';
 import PerformanceManagement from './components/PerformanceManagement';
-import LibraryLayout from './components/library/LibraryLayout';
-import LibraryDashboard from './components/library/LibraryDashboard';
-import BookManagement from './components/library/BookManagement';
-import MemberManagement from './components/library/MemberManagement';
-import BorrowingManagement from './components/library/BorrowingManagement';
 import FloatingActions from './components/FloatingActions';
 import './App.css';
 
@@ -23,7 +18,7 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<Navigate to="/library" replace />} />
+          <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/form" element={<LifeHistoryForm />} />
           <Route path="/social-security" element={<SocialSecurityForm />} />
@@ -37,14 +32,8 @@ function App() {
             <Route path="leaves" element={<LeaveManagement />} />
             <Route path="performance" element={<PerformanceManagement />} />
           </Route>
-          <Route path="/library" element={<LibraryLayout />}>
-            <Route index element={<LibraryDashboard />} />
-            <Route path="books" element={<BookManagement />} />
-            <Route path="members" element={<MemberManagement />} />
-            <Route path="borrowings" element={<BorrowingManagement />} />
-          </Route>
-          {/* Catch-all fallback */}
-          <Route path="*" element={<Navigate to="/library" replace />} />
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <FloatingActions />
       </div>
