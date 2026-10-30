@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Employee } from '../types/hrTypes';
 import { hrApi } from '../services/api';
@@ -158,14 +158,14 @@ const EmployeeManagement = () => {
           <table className="employee-table">
           <thead>
             <tr>
-              <th>{t('common.welcome')}</th>
+              <th>{t('employees.firstName')}</th>
               <th>{t('employees.email')}</th>
               <th>{t('employees.position')}</th>
               <th>{t('employees.department')}</th>
               <th>{t('employees.hireDate')}</th>
               <th>{t('employees.salary')}</th>
               <th>{t('employees.status')}</th>
-              <th>{t('common.edit')}</th>
+              <th>{t('common.actions', 'Actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -183,7 +183,7 @@ const EmployeeManagement = () => {
                 <td>{employee.position}</td>
                 <td>{employee.department}</td>
                 <td>{new Date(employee.hireDate).toLocaleDateString()}</td>
-                <td>${employee.salary.toLocaleString()}</td>
+                <td>$employee.salary.toLocaleString() ETB</td>
                 <td>{getStatusBadge(employee.status)}</td>
                 <td>
                   <div className="action-buttons">

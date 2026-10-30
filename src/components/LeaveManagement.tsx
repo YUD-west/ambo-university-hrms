@@ -1,9 +1,11 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { LeaveRequest, Employee } from '../types/hrTypes';
 import { hrApi } from '../services/api';
 import './LeaveManagement.css';
 
 const LeaveManagement = () => {
+  const { t } = useTranslation();
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ const LeaveManagement = () => {
     startDate: '',
     endDate: '',
     reason: '',
-    status: 'pending'
+    status: 'pending',
   });
 
   const fetchLeaves = useCallback(async () => {
@@ -61,7 +63,7 @@ const LeaveManagement = () => {
       startDate: '',
       endDate: '',
       reason: '',
-      status: 'pending'
+      status: 'pending',
     });
     setShowModal(true);
   };
@@ -94,33 +96,19 @@ const LeaveManagement = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this leave request?')) {
-      // Note: Backend doesn't have delete endpoint for leaves, so we'll just update status
-      try {
-        const response = await hrApi.updateLeaveRequest(id, { status: 'rejected' });
-        if (response.success) {
-          await fetchLeaves();
-        }
-      } catch (error) {
-        console.error('Error deleting leave:', error);
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const employee = employees.find(emp => emp.id === formData.employeeId);
+      const employee = employees.find((emp) => emp.id === formData.employeeId);
       const startDate = new Date(formData.startDate || '');
       const endDate = new Date(formData.endDate || '');
       const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      
+
       const leaveData = {
         ...formData,
         employeeName: employee ? `${employee.firstName} ${employee.lastName}` : '',
         days,
-        submittedDate: new Date().toISOString().split('T')[0]
+        submittedDate: new Date().toISOString().split('T')[0],
       };
 
       const response = await hrApi.createLeaveRequest(leaveData);
@@ -136,27 +124,45 @@ const LeaveManagement = () => {
     }
   };
 
-  const filteredLeaves = leaves;
-
   const getStatusBadge = (status: string) => {
     const statusClasses = {
       pending: 'status-pending',
       approved: 'status-approved',
-      rejected: 'status-rejected'
+      rejected: 'status-rejected',
     };
-    return <span className={`status-badge ${statusClasses[status as keyof typeof statusClasses]}`}>{status}</span>;
+    const statusLabels: Record<string, string> = {
+      pending: t('leaves.pending', 'Under Review'),
+      approved: t('leaves.approved', 'Approved'),
+      rejected: t('leaves.rejected', 'Declined'),
+    };
+    return (
+      <span className={`status-badge ${statusClasses[status as keyof typeof statusClasses] || 'status-pending'}`}>
+        {statusLabels[status] || status}
+      </span>
+    );
   };
 
   const getTypeBadge = (type: string) => {
-    return <span className="type-badge">{type}</span>;
+    const typeLabels: Record<string, string> = {
+      vacation: t('leaves.typeVacation', 'Annual Leave'),
+      sick: t('leaves.typeSick', 'Sick Leave'),
+      personal: t('leaves.typePersonal', 'Personal'),
+      maternity: t('leaves.typeMaternity', 'Maternity'),
+      paternity: t('leaves.typePaternity', 'Paternity'),
+      study: t('leaves.typeStudy', 'Study Leave'),
+    };
+    return <span className="type-badge">{typeLabels[type] || type}</span>;
   };
 
   return (
     <div className="leave-management">
       <div className="page-header">
-        <h2>Leave Management</h2>
+        <div>
+          <h2>{t('leaves.title', 'Leave Administration & Approvals')}</h2>
+          <p className="page-subtitle">{t('leaves.subtitle', 'Absence requests, entitlements, statutory balances, and approvals')}</p>
+        </div>
         <button className="btn-primary" onClick={handleAdd}>
-          + Request Leave
+          + {t('leaves.requestLeave', 'Submit Leave Application')}
         </button>
       </div>
 
@@ -165,122 +171,131 @@ const LeaveManagement = () => {
           className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
           onClick={() => setFilterStatus('all')}
         >
-          All
+          {t('common.all', 'All')}
         </button>
         <button
           className={`filter-btn ${filterStatus === 'pending' ? 'active' : ''}`}
           onClick={() => setFilterStatus('pending')}
         >
-          Pending
+          {t('leaves.pending', 'Pending Review')}
         </button>
         <button
           className={`filter-btn ${filterStatus === 'approved' ? 'active' : ''}`}
           onClick={() => setFilterStatus('approved')}
         >
-          Approved
+          {t('leaves.approved', 'Approved')}
         </button>
         <button
           className={`filter-btn ${filterStatus === 'rejected' ? 'active' : ''}`}
           onClick={() => setFilterStatus('rejected')}
         >
-          Rejected
+          {t('leaves.rejected', 'Declined')}
         </button>
       </div>
 
       {loading ? (
-        <div className="loading">Loading leave requests...</div>
+        <div className="loading">{t('common.loading', 'Loading leave requests...')}</div>
       ) : (
         <div className="leaves-grid">
-          {filteredLeaves.map((leave) => (
-          <div key={leave.id} className="leave-card">
-            <div className="leave-header">
-              <div>
-                <h3>{leave.employeeName}</h3>
-                <p className="leave-submitted">Submitted: {new Date(leave.submittedDate).toLocaleDateString()}</p>
-              </div>
-              {getStatusBadge(leave.status)}
-            </div>
-            <div className="leave-details">
-              <div className="leave-detail-row">
-                <span className="detail-label">Type:</span>
-                {getTypeBadge(leave.type)}
-              </div>
-              <div className="leave-detail-row">
-                <span className="detail-label">Period:</span>
-                <span className="detail-value">
-                  {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="leave-detail-row">
-                <span className="detail-label">Days:</span>
-                <span className="detail-value">{leave.days} days</span>
-              </div>
-              <div className="leave-reason">
-                <span className="detail-label">Reason:</span>
-                <p>{leave.reason}</p>
-              </div>
-            </div>
-            {leave.status === 'pending' && (
-              <div className="leave-actions">
-                <button className="btn-approve" onClick={() => handleApprove(leave.id)}>
-                  Approve
-                </button>
-                <button className="btn-reject" onClick={() => handleReject(leave.id)}>
-                  Reject
-                </button>
-                <button className="btn-delete" onClick={() => handleDelete(leave.id)}>
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-        </div>
-      )}
+          {leaves.length === 0 ? (
+            <p className="no-data" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
+              {t('leaves.noLeaves', 'No leave applications matching selected criteria')}
+            </p>
+          ) : (
+            leaves.map((leave) => (
+              <div key={leave.id} className="leave-card">
+                <div className="leave-header">
+                  <div>
+                    <h3>{leave.employeeName}</h3>
+                    <p className="leave-submitted">
+                      {t('common.date', 'Submitted')}: {new Date(leave.submittedDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="badges">
+                    {getTypeBadge(leave.type)}
+                    {getStatusBadge(leave.status)}
+                  </div>
+                </div>
 
-      {!loading && filteredLeaves.length === 0 && (
-        <div className="no-data">
-          <p>No leave requests found</p>
+                <div className="leave-details">
+                  <div className="detail-item">
+                    <span className="detail-label">{t('leaves.startDate', 'Duration')}:</span>
+                    <span className="detail-value">
+                      {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">{t('leaves.days', 'Days')}:</span>
+                    <span className="detail-value">{leave.days} {t('leaves.days', 'days')}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">{t('leaves.reason', 'Reason')}:</span>
+                    <span className="detail-value">{leave.reason}</span>
+                  </div>
+                </div>
+
+                {leave.status === 'pending' && (
+                  <div className="leave-actions">
+                    <button
+                      className="btn-approve"
+                      onClick={() => handleApprove(leave.id)}
+                    >
+                      ✓ {t('leaves.approveAction', 'Approve')}
+                    </button>
+                    <button
+                      className="btn-reject"
+                      onClick={() => handleReject(leave.id)}
+                    >
+                      ✗ {t('leaves.rejectAction', 'Decline')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Request Leave</h3>
+            <h3>{t('leaves.requestLeave', 'Submit Leave Application')}</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Employee</label>
+                <label>{t('leaves.employeeName', 'Staff Member')}</label>
                 <select
                   value={formData.employeeId}
                   onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
                   required
                 >
-                  <option value="">Select Employee</option>
-                  {employees.map(emp => (
+                  <option value="">-- {t('common.search', 'Select Staff Member')} --</option>
+                  {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
-                      {emp.firstName} {emp.lastName}
+                      {emp.firstName} {emp.lastName} ({emp.department})
                     </option>
                   ))}
                 </select>
               </div>
+
               <div className="form-group">
-                <label>Leave Type</label>
+                <label>{t('leaves.type', 'Leave Category')}</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as LeaveRequest['type'] })}
                   required
                 >
-                  <option value="vacation">Vacation</option>
-                  <option value="sick">Sick Leave</option>
-                  <option value="personal">Personal</option>
-                  <option value="maternity">Maternity</option>
-                  <option value="paternity">Paternity</option>
+                  <option value="vacation">{t('leaves.typeVacation', 'Annual Statutory Leave')}</option>
+                  <option value="sick">{t('leaves.typeSick', 'Medical / Sick Leave')}</option>
+                  <option value="personal">{t('leaves.typePersonal', 'Personal / Compassionate')}</option>
+                  <option value="maternity">{t('leaves.typeMaternity', 'Maternity Leave')}</option>
+                  <option value="paternity">{t('leaves.typePaternity', 'Paternity Leave')}</option>
+                  <option value="study">{t('leaves.typeStudy', 'Academic Study Leave')}</option>
                 </select>
               </div>
+
               <div className="form-row">
                 <div className="form-group">
-                  <label>Start Date</label>
+                  <label>{t('leaves.startDate', 'Start Date')}</label>
                   <input
                     type="date"
                     value={formData.startDate}
@@ -289,7 +304,7 @@ const LeaveManagement = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>End Date</label>
+                  <label>{t('leaves.endDate', 'End Date')}</label>
                   <input
                     type="date"
                     value={formData.endDate}
@@ -298,21 +313,23 @@ const LeaveManagement = () => {
                   />
                 </div>
               </div>
+
               <div className="form-group">
-                <label>Reason</label>
+                <label>{t('leaves.reason', 'Justification / Reason')}</label>
                 <textarea
                   value={formData.reason}
                   onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                  rows={3}
                   required
-                  rows={4}
                 />
               </div>
+
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button type="submit" className="btn-primary">
-                  Submit Request
+                  {t('common.submit', 'Submit Request')}
                 </button>
               </div>
             </form>
@@ -324,4 +341,3 @@ const LeaveManagement = () => {
 };
 
 export default LeaveManagement;
-

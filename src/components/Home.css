@@ -679,3 +679,50 @@
   }
 }
 
+
+/* Staff Login Button & Form Navigation Updates */
+.nav-staff-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  background: linear-gradient(135deg, #0f4c75 0%, #1e3a8a 100%);
+  color: #ffffff !important;
+  border-radius: 6px;
+  font-weight: 600 !important;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(15, 76, 117, 0.25);
+}
+
+.nav-staff-login-btn:hover {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 76, 117, 0.35);
+}
+
+.nav-staff-login-btn::after {
+  display: none !important;
+}
+
+.contact-success-box {
+  padding: 1.5rem;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 8px;
+  border: 1px solid #a7f3d0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+[data-theme='dark'] .contact-success-box {
+  background: #064e3b;
+  color: #a7f3d0;
+  border-color: #047857;
+}
+
+[data-theme='dark'] .nav-staff-login-btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff !important;
+}

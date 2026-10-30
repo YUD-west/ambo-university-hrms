@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PerformanceReview, Employee } from '../types/hrTypes';
 import { hrApi } from '../services/api';
 import './PerformanceManagement.css';
 
 const PerformanceManagement = () => {
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState<PerformanceReview[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,20 +14,15 @@ const PerformanceManagement = () => {
     employeeId: '',
     reviewPeriod: '',
     reviewDate: new Date().toISOString().split('T')[0],
-    overallRating: 0,
+    overallRating: 5,
     goals: [''],
     achievements: [''],
     areasForImprovement: [''],
     reviewerName: '',
-    comments: ''
+    comments: '',
   });
 
-  useEffect(() => {
-    fetchReviews();
-    fetchEmployees();
-  }, []);
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
       const response = await hrApi.getPerformanceReviews();
@@ -38,9 +35,9 @@ const PerformanceManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       const response = await hrApi.getEmployees();
       if (response.success && response.data) {
@@ -50,42 +47,55 @@ const PerformanceManagement = () => {
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchReviews();
+    fetchEmployees();
+  }, [fetchReviews, fetchEmployees]);
 
   const handleAdd = () => {
     setFormData({
       employeeId: '',
       reviewPeriod: '',
       reviewDate: new Date().toISOString().split('T')[0],
-      overallRating: 0,
+      overallRating: 5,
       goals: [''],
       achievements: [''],
       areasForImprovement: [''],
       reviewerName: '',
-      comments: ''
+      comments: '',
     });
     setShowModal(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this performance review?')) {
-      // Note: Backend doesn't have delete endpoint, so we'll just remove from local state
-      // In production, you'd call an API delete endpoint
-      setReviews(reviews.filter(review => review.id !== id));
+    if (window.confirm(t('common.confirm', 'Are you sure you want to remove this appraisal?'))) {
+      try {
+        const response = await hrApi.deletePerformanceReview(id);
+        if (response.success) {
+          await fetchReviews();
+        } else {
+          alert(response.message || 'Failed to delete review');
+        }
+      } catch (error) {
+        console.error('Error deleting review:', error);
+        alert('Failed to delete review');
+      }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const employee = employees.find(emp => emp.id === formData.employeeId);
-      
+      const employee = employees.find((emp) => emp.id === formData.employeeId);
+
       const reviewData = {
         ...formData,
         employeeName: employee ? `${employee.firstName} ${employee.lastName}` : '',
-        goals: formData.goals?.filter(g => g.trim() !== '') || [],
-        achievements: formData.achievements?.filter(a => a.trim() !== '') || [],
-        areasForImprovement: formData.areasForImprovement?.filter(a => a.trim() !== '') || []
+        goals: formData.goals?.filter((g) => g.trim() !== '') || [],
+        achievements: formData.achievements?.filter((a) => a.trim() !== '') || [],
+        areasForImprovement: formData.areasForImprovement?.filter((a) => a.trim() !== '') || [],
       };
 
       const response = await hrApi.createPerformanceReview(reviewData);
@@ -104,7 +114,7 @@ const PerformanceManagement = () => {
   const addGoal = () => {
     setFormData({
       ...formData,
-      goals: [...(formData.goals || []), '']
+      goals: [...(formData.goals || []), ''],
     });
   };
 
@@ -117,7 +127,7 @@ const PerformanceManagement = () => {
   const addAchievement = () => {
     setFormData({
       ...formData,
-      achievements: [...(formData.achievements || []), '']
+      achievements: [...(formData.achievements || []), ''],
     });
   };
 
@@ -130,7 +140,7 @@ const PerformanceManagement = () => {
   const addImprovement = () => {
     setFormData({
       ...formData,
-      areasForImprovement: [...(formData.areasForImprovement || []), '']
+      areasForImprovement: [...(formData.areasForImprovement || []), ''],
     });
   };
 
@@ -149,104 +159,136 @@ const PerformanceManagement = () => {
   return (
     <div className="performance-management">
       <div className="page-header">
-        <h2>Performance Reviews</h2>
+        <div>
+          <h2>{t('performance.title', 'Staff Performance Evaluation')}</h2>
+          <p className="page-subtitle">{t('performance.subtitle', 'Civil service appraisals, competency scorecards, and review cycles')}</p>
+        </div>
         <button className="btn-primary" onClick={handleAdd}>
-          + New Review
+          + {t('performance.addReview', 'Create Performance Appraisal')}
         </button>
       </div>
 
       {loading ? (
-        <div className="loading">Loading performance reviews...</div>
+        <div className="loading">{t('common.loading', 'Loading performance reviews...')}</div>
       ) : (
         <div className="reviews-grid">
-          {reviews.map((review) => (
-          <div key={review.id} className="review-card">
-            <div className="review-header">
-              <div>
-                <h3>{review.employeeName}</h3>
-                <p className="review-period">{review.reviewPeriod}</p>
+          {reviews.length === 0 ? (
+            <p className="no-data" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
+              {t('performance.noReviews', 'No performance reviews found')}
+            </p>
+          ) : (
+            reviews.map((review) => (
+              <div key={review.id} className="review-card">
+                <div className="review-header">
+                  <div>
+                    <h3>{review.employeeName}</h3>
+                    <p className="review-period">{review.reviewPeriod}</p>
+                  </div>
+                  <div
+                    className="rating-badge"
+                    style={{
+                      backgroundColor: getRatingColor(review.overallRating) + '20',
+                      color: getRatingColor(review.overallRating),
+                    }}
+                  >
+                    ⭐ {review.overallRating}/5
+                  </div>
+                </div>
+
+                <div className="review-details">
+                  <div className="review-section">
+                    <h4>{t('performance.goals', 'Institutional Objectives')}</h4>
+                    <ul>
+                      {review.goals.map((goal, idx) => (
+                        <li key={idx}>{goal}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="review-section">
+                    <h4>{t('performance.achievements', 'Key Achievements')}</h4>
+                    <ul>
+                      {review.achievements.map((achievement, idx) => (
+                        <li key={idx}>{achievement}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="review-section">
+                    <h4>{t('performance.areasForImprovement', 'Development Areas')}</h4>
+                    <ul>
+                      {review.areasForImprovement.map((area, idx) => (
+                        <li key={idx}>{area}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="review-section">
+                    <h4>{t('performance.comments', 'Supervisor Evaluation Remarks')}</h4>
+                    <p>{review.comments}</p>
+                  </div>
+
+                  <div className="review-footer">
+                    <span className="reviewer">
+                      {t('performance.reviewerName', 'Supervisor')}: {review.reviewerName}
+                    </span>
+                    <span className="review-date">
+                      {new Date(review.reviewDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn-delete"
+                  onClick={() => handleDelete(review.id)}
+                  title={t('common.delete', 'Delete')}
+                >
+                  🗑️ {t('common.delete', 'Archive')}
+                </button>
               </div>
-              <div className="rating-badge" style={{ backgroundColor: getRatingColor(review.overallRating) + '20', color: getRatingColor(review.overallRating) }}>
-                {review.overallRating}/5
-              </div>
-            </div>
-            <div className="review-details">
-              <div className="review-section">
-                <h4>Goals</h4>
-                <ul>
-                  {review.goals.map((goal, idx) => (
-                    <li key={idx}>{goal}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="review-section">
-                <h4>Achievements</h4>
-                <ul>
-                  {review.achievements.map((achievement, idx) => (
-                    <li key={idx}>{achievement}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="review-section">
-                <h4>Areas for Improvement</h4>
-                <ul>
-                  {review.areasForImprovement.map((area, idx) => (
-                    <li key={idx}>{area}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="review-section">
-                <h4>Reviewer Comments</h4>
-                <p>{review.comments}</p>
-              </div>
-              <div className="review-footer">
-                <span className="reviewer">Reviewed by: {review.reviewerName}</span>
-                <span className="review-date">{new Date(review.reviewDate).toLocaleDateString()}</span>
-              </div>
-            </div>
-            <button className="btn-delete" onClick={() => handleDelete(review.id)}>
-              Delete
-            </button>
-          </div>
-        ))}
+            ))
+          )}
         </div>
       )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>New Performance Review</h3>
+            <h3>{t('performance.addReview', 'Create Performance Appraisal')}</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Employee</label>
+                  <label>{t('performance.employeeName', 'Staff Member')}</label>
                   <select
                     value={formData.employeeId}
                     onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
                     required
                   >
-                  <option value="">Select Employee</option>
-                  {employees.map(emp => (
+                    <option value="">-- {t('common.search', 'Select Staff Member')} --</option>
+                    {employees.map((emp) => (
                       <option key={emp.id} value={emp.id}>
-                        {emp.firstName} {emp.lastName}
+                        {emp.firstName} {emp.lastName} ({emp.department})
                       </option>
                     ))}
                   </select>
                 </div>
+
                 <div className="form-group">
-                  <label>Review Period</label>
+                  <label>{t('performance.reviewPeriod', 'Evaluation Cycle')}</label>
                   <input
                     type="text"
                     value={formData.reviewPeriod}
                     onChange={(e) => setFormData({ ...formData, reviewPeriod: e.target.value })}
-                    placeholder="e.g., Q4 2023"
+                    placeholder="e.g., Q1 2026 Academic Year"
                     required
                   />
                 </div>
               </div>
+
               <div className="form-row">
                 <div className="form-group">
-                  <label>Review Date</label>
+                  <label>{t('performance.reviewDate', 'Appraisal Date')}</label>
                   <input
                     type="date"
                     value={formData.reviewDate}
@@ -255,7 +297,7 @@ const PerformanceManagement = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Overall Rating (1-5)</label>
+                  <label>{t('performance.overallRating', 'Overall Rating (1 - 5)')}</label>
                   <input
                     type="number"
                     min="1"
@@ -267,33 +309,37 @@ const PerformanceManagement = () => {
                   />
                 </div>
               </div>
+
               <div className="form-group">
-                <label>Reviewer Name</label>
+                <label>{t('performance.reviewerName', 'Evaluating Supervisor')}</label>
                 <input
                   type="text"
                   value={formData.reviewerName}
                   onChange={(e) => setFormData({ ...formData, reviewerName: e.target.value })}
+                  placeholder="Supervisor full name & title"
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label>Goals</label>
+                <label>{t('performance.goals', 'Institutional Objectives')}</label>
                 {formData.goals?.map((goal, idx) => (
                   <input
                     key={idx}
                     type="text"
                     value={goal}
                     onChange={(e) => updateGoal(idx, e.target.value)}
-                    placeholder={`Goal ${idx + 1}`}
+                    placeholder={`Objective ${idx + 1}`}
                     className="list-input"
                   />
                 ))}
                 <button type="button" className="btn-add-item" onClick={addGoal}>
-                  + Add Goal
+                  + Add Objective
                 </button>
               </div>
+
               <div className="form-group">
-                <label>Achievements</label>
+                <label>{t('performance.achievements', 'Key Achievements')}</label>
                 {formData.achievements?.map((achievement, idx) => (
                   <input
                     key={idx}
@@ -308,8 +354,9 @@ const PerformanceManagement = () => {
                   + Add Achievement
                 </button>
               </div>
+
               <div className="form-group">
-                <label>Areas for Improvement</label>
+                <label>{t('performance.areasForImprovement', 'Development Areas')}</label>
                 {formData.areasForImprovement?.map((area, idx) => (
                   <input
                     key={idx}
@@ -324,8 +371,9 @@ const PerformanceManagement = () => {
                   + Add Area
                 </button>
               </div>
+
               <div className="form-group">
-                <label>Comments</label>
+                <label>{t('performance.comments', 'Supervisor Evaluation Remarks')}</label>
                 <textarea
                   value={formData.comments}
                   onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
@@ -333,12 +381,13 @@ const PerformanceManagement = () => {
                   required
                 />
               </div>
+
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button type="submit" className="btn-primary">
-                  Submit Review
+                  {t('common.save', 'Save Appraisal')}
                 </button>
               </div>
             </form>
@@ -350,4 +399,3 @@ const PerformanceManagement = () => {
 };
 
 export default PerformanceManagement;
-

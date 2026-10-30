@@ -3,37 +3,45 @@ import './LanguageSwitcher.css';
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
+    localStorage.setItem('i18nextLng', lng);
+    localStorage.setItem('currentLanguage', lng);
   };
 
   return (
-    <div className="language-switcher">
+    <div className="language-switcher" role="group" aria-label="Language Selector">
       <button
-        className={`lang-btn ${i18n.language === 'en' ? 'active' : ''}`}
+        type="button"
+        className={`lang-btn ${currentLang.startsWith('en') ? 'active' : ''}`}
         onClick={() => changeLanguage('en')}
-        title="English"
+        title="English (Default)"
+        aria-pressed={currentLang.startsWith('en')}
       >
         🇬🇧 EN
       </button>
       <button
-        className={`lang-btn ${i18n.language === 'am' ? 'active' : ''}`}
-        onClick={() => changeLanguage('am')}
-        title="አማርኛ"
-      >
-        🇪🇹 አማ
-      </button>
-      <button
-        className={`lang-btn ${i18n.language === 'om' ? 'active' : ''}`}
+        type="button"
+        className={`lang-btn ${currentLang.startsWith('om') ? 'active' : ''}`}
         onClick={() => changeLanguage('om')}
         title="Afaan Oromoo"
+        aria-pressed={currentLang.startsWith('om')}
       >
         🇪🇹 OM
+      </button>
+      <button
+        type="button"
+        className={`lang-btn ${currentLang.startsWith('am') ? 'active' : ''}`}
+        onClick={() => changeLanguage('am')}
+        title="አማርኛ"
+        aria-pressed={currentLang.startsWith('am')}
+      >
+        🇪🇹 አማ
       </button>
     </div>
   );
 };
 
 export default LanguageSwitcher;
-

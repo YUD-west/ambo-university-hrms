@@ -443,3 +443,50 @@
   }
 }
 
+
+/* Admin Top Bar User Pill & Logout */
+.admin-user-pill {
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.admin-logout-btn {
+  padding: 0.4rem 0.8rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-logout-btn:hover {
+  background: #fecaca;
+  color: #7f1d1d;
+  transform: translateY(-1px);
+}
+
+.admin-header-subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+[data-theme='dark'] .admin-header-subtitle {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .admin-logout-btn {
+  background: #450a0a;
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}

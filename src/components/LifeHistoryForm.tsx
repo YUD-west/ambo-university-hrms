@@ -1,10 +1,16 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
+import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 import type { LifeHistoryFormData, Gender, MaritalStatus, ProficiencyLevel } from '../types/formTypes';
 import { submitFormToAdmin } from '../services/formSubmission';
 import './LifeHistoryForm.css';
 
 const LifeHistoryForm = () => {
+  const { t } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({
     type: null,
@@ -392,12 +398,32 @@ const LifeHistoryForm = () => {
 
   return (
     <div className="form-container">
-      <div className="form-top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#ffffff', padding: '0.875rem 1.25rem', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-        <Link to="/" style={{ color: '#0f4c75', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>← Back to Portal Home</Link>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link to="/hr" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>📊 HR Dashboard</Link>
-          <Link to="/social-security" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>🛡️ Social Security Form</Link>
-          <Link to="/admin" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>⚙️ Admin Panel</Link>
+      <div className="form-top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#ffffff', padding: '0.875rem 1.25rem', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <Link to="/" style={{ color: '#0f4c75', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>
+          ← {t('nav.home', 'Portal Home')}
+        </Link>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link to="/social-security" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>
+            🛡️ {t('nav.socialSecurityForm', 'Social Security Form')}
+          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/hr" style={{ color: '#0f4c75', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+                📊 {t('nav.dashboard', 'HR Dashboard')}
+              </Link>
+              {user?.role === 'admin' && (
+                <Link to="/admin" style={{ color: '#0f4c75', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+                  ⚙️ {t('nav.admin', 'Admin Panel')}
+                </Link>
+              )}
+            </>
+          ) : (
+            <Link to="/login" style={{ color: '#0f4c75', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+              🔐 {t('nav.login', 'Staff Login')}
+            </Link>
+          )}
+          <LanguageSwitcher />
+          <ThemeToggle />
         </div>
       </div>
       {submitStatus.type && (

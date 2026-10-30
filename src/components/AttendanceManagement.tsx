@@ -1,9 +1,11 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Attendance, Employee } from '../types/hrTypes';
 import { hrApi } from '../services/api';
 import './AttendanceManagement.css';
 
 const AttendanceManagement = () => {
+  const { t } = useTranslation();
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ const AttendanceManagement = () => {
     date: selectedDate,
     checkIn: '09:00',
     checkOut: '18:00',
-    status: 'present'
+    status: 'present',
   });
 
   const fetchAttendance = useCallback(async () => {
@@ -53,7 +55,7 @@ const AttendanceManagement = () => {
   }, [fetchEmployees]);
 
   useEffect(() => {
-    setFormData(prev => ({ ...prev, date: selectedDate }));
+    setFormData((prev) => ({ ...prev, date: selectedDate }));
   }, [selectedDate]);
 
   const handleAdd = () => {
@@ -62,21 +64,21 @@ const AttendanceManagement = () => {
       date: selectedDate,
       checkIn: '09:00',
       checkOut: '18:00',
-      status: 'present'
+      status: 'present',
     });
     setShowModal(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const employee = employees.find(emp => emp.id === formData.employeeId);
+      const employee = employees.find((emp) => emp.id === formData.employeeId);
       const hoursWorked = calculateHours(formData.checkIn || '09:00', formData.checkOut || '18:00');
-      
+
       const attendanceData = {
         ...formData,
         employeeName: employee ? `${employee.firstName} ${employee.lastName}` : '',
-        hoursWorked
+        hoursWorked,
       };
 
       const response = await hrApi.createAttendance(attendanceData);
@@ -100,120 +102,134 @@ const AttendanceManagement = () => {
     return (outTime - inTime) / 60;
   };
 
-  const filteredAttendance = attendance.filter(a => a.date === selectedDate);
+  const filteredAttendance = attendance.filter((a) => a.date === selectedDate);
 
   const getStatusBadge = (status: string) => {
     const statusClasses = {
       present: 'status-present',
       absent: 'status-absent',
       late: 'status-late',
-      'half-day': 'status-halfday'
+      'half-day': 'status-halfday',
     };
-    return <span className={`status-badge ${statusClasses[status as keyof typeof statusClasses]}`}>{status}</span>;
+    const statusLabels: Record<string, string> = {
+      present: t('attendance.present', 'Present'),
+      late: t('attendance.late', 'Late'),
+      absent: t('attendance.absent', 'Absent'),
+      'half-day': t('attendance.halfDay', 'Half Day'),
+    };
+    return (
+      <span className={`status-badge ${statusClasses[status as keyof typeof statusClasses] || 'status-present'}`}>
+        {statusLabels[status] || status}
+      </span>
+    );
   };
 
   return (
     <div className="attendance-management">
       <div className="page-header">
-        <h2>Attendance Management</h2>
+        <div>
+          <h2>{t('attendance.title', 'Attendance Management')}</h2>
+          <p className="page-subtitle">{t('attendance.subtitle', 'Daily civil service check-in, departure timestamps, and compliance ledger')}</p>
+        </div>
         <div className="header-controls">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             className="date-input"
+            aria-label={t('attendance.dateFilter', 'Selected Date')}
           />
           <button className="btn-primary" onClick={handleAdd}>
-            + Mark Attendance
+            + {t('attendance.markAttendance', 'Log Attendance Record')}
           </button>
         </div>
       </div>
 
       <div className="attendance-stats">
         <div className="stat-box">
-          <span className="stat-label">Present</span>
-          <span className="stat-number">{filteredAttendance.filter(a => a.status === 'present').length}</span>
+          <span className="stat-label">{t('attendance.presentCount', 'Present on Duty')}</span>
+          <span className="stat-number">{filteredAttendance.filter((a) => a.status === 'present').length}</span>
         </div>
         <div className="stat-box">
-          <span className="stat-label">Late</span>
-          <span className="stat-number">{filteredAttendance.filter(a => a.status === 'late').length}</span>
+          <span className="stat-label">{t('attendance.lateCount', 'Late Arrivals')}</span>
+          <span className="stat-number">{filteredAttendance.filter((a) => a.status === 'late').length}</span>
         </div>
         <div className="stat-box">
-          <span className="stat-label">Absent</span>
-          <span className="stat-number">{filteredAttendance.filter(a => a.status === 'absent').length}</span>
+          <span className="stat-label">{t('attendance.absentCount', 'Absences')}</span>
+          <span className="stat-number">{filteredAttendance.filter((a) => a.status === 'absent').length}</span>
         </div>
         <div className="stat-box">
-          <span className="stat-label">Total</span>
+          <span className="stat-label">{t('common.all', 'Total Logged')}</span>
           <span className="stat-number">{filteredAttendance.length}</span>
         </div>
       </div>
 
       {loading ? (
-        <div className="loading">Loading attendance...</div>
+        <div className="loading">{t('common.loading', 'Loading attendance...')}</div>
       ) : (
         <div className="attendance-table-container">
           <table className="attendance-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Check In</th>
-              <th>Check Out</th>
-              <th>Hours Worked</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAttendance.length === 0 ? (
+            <thead>
               <tr>
-                <td colSpan={5} className="no-data-cell">
-                  No attendance records for this date
-                </td>
+                <th>{t('attendance.employeeName', 'Staff Member')}</th>
+                <th>{t('attendance.checkIn', 'Check In')}</th>
+                <th>{t('attendance.checkOut', 'Check Out')}</th>
+                <th>{t('attendance.hoursWorked', 'Hours Worked')}</th>
+                <th>{t('attendance.status', 'Status')}</th>
               </tr>
-            ) : (
-              filteredAttendance.map((record) => (
-                <tr key={record.id}>
-                  <td>
-                    <div className="employee-name-cell">
-                      <div className="employee-avatar">
-                        {record.employeeName.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      {record.employeeName}
-                    </div>
+            </thead>
+            <tbody>
+              {filteredAttendance.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="no-data-cell">
+                    {t('attendance.noRecords', 'No attendance records recorded for this date')}
                   </td>
-                  <td>{record.checkIn}</td>
-                  <td>{record.checkOut}</td>
-                  <td>{record.hoursWorked.toFixed(2)} hrs</td>
-                  <td>{getStatusBadge(record.status)}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                filteredAttendance.map((record) => (
+                  <tr key={record.id}>
+                    <td>
+                      <div className="employee-name-cell">
+                        <div className="employee-avatar">
+                          {record.employeeName.split(' ').map((n) => n[0]).join('')}
+                        </div>
+                        {record.employeeName}
+                      </div>
+                    </td>
+                    <td>{record.checkIn}</td>
+                    <td>{record.checkOut}</td>
+                    <td>{record.hoursWorked.toFixed(2)} hrs</td>
+                    <td>{getStatusBadge(record.status)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Mark Attendance</h3>
+            <h3>{t('attendance.markAttendance', 'Log Attendance Record')}</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Employee</label>
+                <label>{t('attendance.employeeName', 'Employee')}</label>
                 <select
                   value={formData.employeeId}
                   onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
                   required
                 >
-                  <option value="">Select Employee</option>
-                  {employees.map(emp => (
+                  <option value="">-- {t('common.search', 'Select Staff Member')} --</option>
+                  {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
-                      {emp.firstName} {emp.lastName}
+                      {emp.firstName} {emp.lastName} ({emp.department})
                     </option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Date</label>
+                <label>{t('common.date', 'Date')}</label>
                 <input
                   type="date"
                   value={formData.date}
@@ -223,7 +239,7 @@ const AttendanceManagement = () => {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Check In</label>
+                  <label>{t('attendance.checkIn', 'Check In')}</label>
                   <input
                     type="time"
                     value={formData.checkIn}
@@ -232,7 +248,7 @@ const AttendanceManagement = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Check Out</label>
+                  <label>{t('attendance.checkOut', 'Check Out')}</label>
                   <input
                     type="time"
                     value={formData.checkOut}
@@ -242,24 +258,24 @@ const AttendanceManagement = () => {
                 </div>
               </div>
               <div className="form-group">
-                <label>Status</label>
+                <label>{t('attendance.status', 'Status')}</label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as Attendance['status'] })}
                   required
                 >
-                  <option value="present">Present</option>
-                  <option value="late">Late</option>
-                  <option value="absent">Absent</option>
-                  <option value="half-day">Half Day</option>
+                  <option value="present">{t('attendance.present', 'Present')}</option>
+                  <option value="late">{t('attendance.late', 'Late')}</option>
+                  <option value="absent">{t('attendance.absent', 'Absent')}</option>
+                  <option value="half-day">{t('attendance.halfDay', 'Half Day')}</option>
                 </select>
               </div>
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button type="submit" className="btn-primary">
-                  Mark Attendance
+                  {t('common.save', 'Save Attendance')}
                 </button>
               </div>
             </form>
@@ -271,4 +287,3 @@ const AttendanceManagement = () => {
 };
 
 export default AttendanceManagement;
-

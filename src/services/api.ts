@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   Employee,
   Department,
   Attendance,
@@ -13,6 +13,7 @@ import {
   mockLeaveRequests,
   mockPerformanceReviews,
 } from './mockData';
+import { authService } from './authService';
 
 // API Base URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -65,9 +66,13 @@ async function request<T>(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout for responsive fallback
 
+    const token = authService.getToken();
+    const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...options.headers,
       },
       signal: controller.signal,
@@ -533,6 +538,13 @@ export const hrApi = {
     setLocal(KEYS.PERFORMANCE, list);
     return { success: true, data: list[idx] };
   },
+
+  deletePerformanceReview: async (id: string): Promise<ApiResponse<void>> => {
+    await request(`/hr/performance/${id}`, { method: 'DELETE' });
+    const list = getLocal<PerformanceReview[]>(KEYS.PERFORMANCE, mockPerformanceReviews).filter(p => p.id !== id);
+    setLocal(KEYS.PERFORMANCE, list);
+    return { success: true, message: 'Review deleted successfully' };
+  },
 };
 
 // ==================== FORM SUBMISSION TYPES ====================
@@ -624,6 +636,9 @@ export const adminApi = {
   },
 
   approveSubmission: async (id: string): Promise<ApiResponse<FormSubmissionRecord>> => {
+    if (!authService.hasRole('admin')) {
+      return { success: false, message: 'Unauthorized: Admin privileges required' };
+    }
     const res = await request<FormSubmissionRecord>(`/admin/submissions/${id}/approve`, { method: 'PUT' });
     if (res.success && res.data) return res;
 
@@ -638,6 +653,9 @@ export const adminApi = {
   },
 
   rejectSubmission: async (id: string): Promise<ApiResponse<FormSubmissionRecord>> => {
+    if (!authService.hasRole('admin')) {
+      return { success: false, message: 'Unauthorized: Admin privileges required' };
+    }
     const res = await request<FormSubmissionRecord>(`/admin/submissions/${id}/reject`, { method: 'PUT' });
     if (res.success && res.data) return res;
 

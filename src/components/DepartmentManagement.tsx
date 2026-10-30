@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Department } from '../types/hrTypes';
 import { hrApi } from '../services/api';
@@ -137,7 +137,7 @@ const DepartmentManagement = () => {
               </div>
               <div className="detail-item">
                 <span className="detail-label">{t('departments.budget')}:</span>
-                <span className="detail-value">${department.budget.toLocaleString()}</span>
+                <span className="detail-value">$department.budget.toLocaleString() ETB</span>
               </div>
             </div>
           </div>
