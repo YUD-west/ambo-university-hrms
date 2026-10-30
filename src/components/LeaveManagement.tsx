@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import type { LeaveRequest, Employee } from '../types/hrTypes';
 import { hrApi } from '../services/api';
 import './LeaveManagement.css';
@@ -18,16 +18,7 @@ const LeaveManagement = () => {
     status: 'pending'
   });
 
-  useEffect(() => {
-    fetchLeaves();
-    fetchEmployees();
-  }, []);
-
-  useEffect(() => {
-    fetchLeaves();
-  }, [filterStatus]);
-
-  const fetchLeaves = async () => {
+  const fetchLeaves = useCallback(async () => {
     try {
       setLoading(true);
       const params = filterStatus === 'all' ? {} : { status: filterStatus };
@@ -41,9 +32,9 @@ const LeaveManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterStatus]);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       const response = await hrApi.getEmployees();
       if (response.success && response.data) {
@@ -53,7 +44,15 @@ const LeaveManagement = () => {
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchLeaves();
+  }, [fetchLeaves]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
 
   const handleAdd = () => {
     setFormData({

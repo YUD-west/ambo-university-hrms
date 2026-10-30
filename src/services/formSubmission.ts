@@ -10,6 +10,14 @@ export interface SubmissionResponse {
   submissionId?: string;
 }
 
+export interface StoredSubmission {
+  id: string;
+  type: 'life-history' | 'social-security';
+  data: LifeHistoryFormData | Record<string, unknown>;
+  submittedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 /**
  * Send form data to admin via API
  */
@@ -50,9 +58,10 @@ const submitFormFallback = async (formData: LifeHistoryFormData): Promise<Submis
     const submissionId = `SUB-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     // Store in localStorage (for demo purposes)
-    const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+    const submissions: StoredSubmission[] = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
     submissions.push({
       id: submissionId,
+      type: 'life-history',
       data: formData,
       submittedAt: new Date().toISOString(),
       status: 'pending',
@@ -64,10 +73,6 @@ const submitFormFallback = async (formData: LifeHistoryFormData): Promise<Submis
     
     // Log email data (in production, this would send an actual email)
     console.log('Email to Admin:', emailData);
-    
-    // In production, you would:
-    // 1. Send email via EmailJS, SendGrid, or your email service
-    // 2. Or use a backend service to send the email
     
     return {
       success: true,
@@ -139,10 +144,10 @@ const generateEmailHTML = (formData: LifeHistoryFormData, submissionId: string):
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 5px 5px 0 0; }
+        .header { background: linear-gradient(135deg, #0f4c75 0%, #1e3a8a 100%); color: white; padding: 20px; border-radius: 5px 5px 0 0; }
         .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; }
         .section { margin-bottom: 20px; }
-        .section-title { font-weight: bold; color: #667eea; margin-bottom: 10px; }
+        .section-title { font-weight: bold; color: #0f4c75; margin-bottom: 10px; }
         .info-row { margin: 5px 0; }
         .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
       </style>
@@ -174,7 +179,7 @@ const generateEmailHTML = (formData: LifeHistoryFormData, submissionId: string):
           </div>
           <div class="footer">
             <p>Please review this submission in the admin panel.</p>
-            <p>This is an automated notification from the Life History Form System.</p>
+            <p>This is an automated notification from the Ambo University HRMS Portal.</p>
           </div>
         </div>
       </div>
@@ -186,7 +191,7 @@ const generateEmailHTML = (formData: LifeHistoryFormData, submissionId: string):
 /**
  * Get all pending submissions (for admin panel)
  */
-export const getPendingSubmissions = (): any[] => {
+export const getPendingSubmissions = (): StoredSubmission[] => {
   try {
     const submissions = localStorage.getItem('formSubmissions');
     return submissions ? JSON.parse(submissions) : [];
@@ -195,4 +200,3 @@ export const getPendingSubmissions = (): any[] => {
     return [];
   }
 };
-

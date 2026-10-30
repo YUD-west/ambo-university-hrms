@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import type { Attendance, Employee } from '../types/hrTypes';
 import { hrApi } from '../services/api';
 import './AttendanceManagement.css';
@@ -17,12 +17,7 @@ const AttendanceManagement = () => {
     status: 'present'
   });
 
-  useEffect(() => {
-    fetchAttendance();
-    fetchEmployees();
-  }, [selectedDate]);
-
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     try {
       setLoading(true);
       const response = await hrApi.getAttendance({ date: selectedDate });
@@ -35,9 +30,9 @@ const AttendanceManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       const response = await hrApi.getEmployees();
       if (response.success && response.data) {
@@ -47,7 +42,15 @@ const AttendanceManagement = () => {
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAttendance();
+  }, [fetchAttendance]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
 
   useEffect(() => {
     setFormData(prev => ({ ...prev, date: selectedDate }));

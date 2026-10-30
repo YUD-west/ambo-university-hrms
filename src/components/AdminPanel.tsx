@@ -1,22 +1,69 @@
-import { useState, useEffect } from 'react';
-import { adminApi } from '../services/api';
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { adminApi, type FormSubmissionRecord } from '../services/api';
+import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 import './AdminPanel.css';
 
+interface PersonalInfo {
+  employeeName?: string;
+  fatherName?: string;
+  dateOfBirth?: string | { day?: string; month?: string; year?: string };
+  phoneNumber?: string;
+  region?: string;
+  woreda?: string;
+}
+
+interface FamilyInfo {
+  maritalStatus?: string;
+  spouseName?: string;
+  children?: unknown[];
+}
+
+interface EducationRecord {
+  level?: string;
+  schoolName?: string;
+}
+
+interface ServiceRecord {
+  serialNumber?: number;
+  officeName?: string;
+}
+
+interface WorkplaceInfo {
+  workplaceName?: string;
+  poBoxNumber?: string;
+  phoneNumber?: string;
+}
+
+interface SpouseInfo {
+  fullName?: string;
+}
+
+interface NormalizedSubmissionData {
+  personalInfo?: PersonalInfo;
+  familyInfo?: FamilyInfo;
+  education?: EducationRecord[];
+  workExperience?: unknown[];
+  workplaceInfo?: WorkplaceInfo;
+  serviceHistory?: ServiceRecord[];
+  spouseInfo?: SpouseInfo;
+  children?: unknown[];
+}
+
 const AdminPanel = () => {
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const [submissions, setSubmissions] = useState<FormSubmissionRecord[]>([]);
+  const [selectedSubmission, setSelectedSubmission] = useState<FormSubmissionRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<'all' | 'life-history' | 'social-security'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
-  useEffect(() => {
-    loadSubmissions();
-  }, [filterType]);
-
-  const loadSubmissions = async () => {
+  const loadSubmissions = useCallback(async () => {
     try {
       setLoading(true);
       const type = filterType === 'all' ? undefined : filterType;
-      const response = await adminApi.getPendingSubmissions(type);
+      const status = filterStatus === 'all' ? undefined : filterStatus;
+      const response = await adminApi.getSubmissions({ type, status });
       if (response.success && response.data) {
         const subs = Array.isArray(response.data) ? response.data : [];
         setSubmissions(subs);
@@ -30,7 +77,11 @@ const AdminPanel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterType, filterStatus]);
+
+  useEffect(() => {
+    loadSubmissions();
+  }, [loadSubmissions]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
@@ -46,9 +97,7 @@ const AdminPanel = () => {
       }
 
       if (response.success) {
-        // Reload submissions to get updated data
         await loadSubmissions();
-        // Update selected submission if it's the one we just changed
         if (selectedSubmission?.id === submissionId) {
           setSelectedSubmission({ ...selectedSubmission, status: newStatus });
         }
@@ -61,36 +110,42 @@ const AdminPanel = () => {
     }
   };
 
-  const getSubmissionName = (submission: any): string => {
-    if (submission.type === 'life-history' && submission.data?.personalInfo?.employeeName) {
-      return submission.data.personalInfo.employeeName;
+  const getSubmissionName = (submission: FormSubmissionRecord): string => {
+    const rawData = submission.data as Record<string, unknown>;
+    if (submission.type === 'life-history') {
+      const personal = rawData?.personalInfo as PersonalInfo | undefined;
+      if (personal?.employeeName) return personal.employeeName;
     }
-    if (submission.type === 'social-security' && submission.data?.employeePersonalStatus?.fullNameWithSurname) {
-      return submission.data.employeePersonalStatus.fullNameWithSurname;
+    if (submission.type === 'social-security') {
+      const status = rawData?.employeePersonalStatus as { fullNameWithSurname?: string } | undefined;
+      if (status?.fullNameWithSurname) return status.fullNameWithSurname;
     }
     return submission.submittedBy || 'Unnamed';
   };
 
-  const getSubmissionData = (submission: any) => {
+  const getSubmissionData = (submission: FormSubmissionRecord): NormalizedSubmissionData => {
+    const rawData = submission.data as Record<string, unknown>;
     if (submission.type === 'life-history') {
       return {
-        personalInfo: submission.data?.personalInfo || {},
-        familyInfo: submission.data?.familyInfo || {},
-        education: submission.data?.education || [],
-        workExperience: submission.data?.workExperience || [],
+        personalInfo: (rawData?.personalInfo as PersonalInfo) || {},
+        familyInfo: (rawData?.familyInfo as FamilyInfo) || {},
+        education: (rawData?.education as EducationRecord[]) || [],
+        workExperience: (rawData?.workExperience as unknown[]) || [],
       };
     }
     if (submission.type === 'social-security') {
+      const personalStatus = (rawData?.employeePersonalStatus as { fullNameWithSurname?: string; dateOfBirth?: { day?: string; month?: string; year?: string } }) || {};
+      const workplace = (rawData?.workplaceInfo as WorkplaceInfo) || {};
       return {
         personalInfo: {
-          employeeName: submission.data?.employeePersonalStatus?.fullNameWithSurname || 'N/A',
-          dateOfBirth: submission.data?.employeePersonalStatus?.dateOfBirth || {},
-          phoneNumber: submission.data?.workplaceInfo?.phoneNumber || 'N/A',
+          employeeName: personalStatus.fullNameWithSurname || 'N/A',
+          dateOfBirth: personalStatus.dateOfBirth || {},
+          phoneNumber: workplace.phoneNumber || 'N/A',
         },
-        workplaceInfo: submission.data?.workplaceInfo || {},
-        serviceHistory: submission.data?.serviceHistory || [],
-        spouseInfo: submission.data?.spouseInfo || {},
-        children: submission.data?.children || [],
+        workplaceInfo: workplace,
+        serviceHistory: (rawData?.serviceHistory as ServiceRecord[]) || [],
+        spouseInfo: (rawData?.spouseInfo as SpouseInfo) || {},
+        children: (rawData?.children as unknown[]) || [],
       };
     }
     return {};
@@ -98,19 +153,52 @@ const AdminPanel = () => {
 
   return (
     <div className="admin-panel">
+      {/* Top Navigation */}
+      <nav className="admin-nav-bar">
+        <div className="admin-nav-brand">
+          <Link to="/" className="brand-link">
+            <h2>Ambo University</h2>
+            <span>Admin Review Center</span>
+          </Link>
+        </div>
+        <div className="admin-nav-links">
+          <Link to="/" className="admin-nav-link">🏠 Portal Home</Link>
+          <Link to="/hr" className="admin-nav-link">📊 HR Dashboard</Link>
+          <Link to="/form" className="admin-nav-link">📋 Life History</Link>
+          <Link to="/social-security" className="admin-nav-link">🛡️ Social Security</Link>
+        </div>
+        <div className="admin-nav-actions">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
+      </nav>
+
       <div className="admin-header">
         <h1>Admin Panel - Form Submissions</h1>
         <div className="header-controls">
           <div className="filter-controls">
-            <label>Filter by Type:</label>
+            <label>Type:</label>
             <select 
               value={filterType} 
-              onChange={(e) => setFilterType(e.target.value as any)}
+              onChange={(e) => setFilterType(e.target.value as 'all' | 'life-history' | 'social-security')}
               className="filter-select"
             >
               <option value="all">All Types</option>
               <option value="life-history">Life History</option>
               <option value="social-security">Social Security</option>
+            </select>
+          </div>
+          <div className="filter-controls">
+            <label>Status:</label>
+            <select 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value as 'all' | 'pending' | 'approved' | 'rejected')}
+              className="filter-select"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
             </select>
           </div>
           <button onClick={loadSubmissions} className="refresh-btn" disabled={loading}>
@@ -121,14 +209,14 @@ const AdminPanel = () => {
 
       <div className="admin-content">
         <div className="submissions-list">
-          <h2>Pending Submissions ({submissions.length})</h2>
+          <h2>Submissions ({submissions.length})</h2>
           {loading ? (
             <div className="empty-state">
               <p>Loading submissions...</p>
             </div>
           ) : submissions.length === 0 ? (
             <div className="empty-state">
-              <p>No pending submissions found.</p>
+              <p>No submissions found.</p>
             </div>
           ) : (
             <div className="submissions-grid">
@@ -204,7 +292,7 @@ const AdminPanel = () => {
                       <div className="detail-grid">
                         <div><strong>Employee Name:</strong> {submissionData.personalInfo?.employeeName || 'N/A'}</div>
                         <div><strong>Father's Name:</strong> {submissionData.personalInfo?.fatherName || 'N/A'}</div>
-                        <div><strong>Date of Birth:</strong> {submissionData.personalInfo?.dateOfBirth || 'N/A'}</div>
+                        <div><strong>Date of Birth:</strong> {typeof submissionData.personalInfo?.dateOfBirth === 'string' ? submissionData.personalInfo.dateOfBirth : 'N/A'}</div>
                         <div><strong>Phone:</strong> {submissionData.personalInfo?.phoneNumber || 'N/A'}</div>
                         <div><strong>Region:</strong> {submissionData.personalInfo?.region || 'N/A'}</div>
                         <div><strong>Woreda:</strong> {submissionData.personalInfo?.woreda || 'N/A'}</div>
@@ -223,7 +311,7 @@ const AdminPanel = () => {
                     <div className="detail-section">
                       <h3>Education</h3>
                       {submissionData.education && submissionData.education.length > 0 ? (
-                        submissionData.education.map((edu: any, index: number) => (
+                        submissionData.education.map((edu, index) => (
                           <div key={index} className="education-item">
                             <strong>{edu.level}:</strong> {edu.schoolName || 'Not specified'}
                           </div>
@@ -247,8 +335,8 @@ const AdminPanel = () => {
                       <div className="detail-grid">
                         <div><strong>Full Name:</strong> {submissionData.personalInfo?.employeeName || 'N/A'}</div>
                         <div><strong>Date of Birth:</strong> {
-                          submissionData.personalInfo?.dateOfBirth 
-                            ? `${submissionData.personalInfo.dateOfBirth.day}/${submissionData.personalInfo.dateOfBirth.month}/${submissionData.personalInfo.dateOfBirth.year}`
+                          typeof submissionData.personalInfo?.dateOfBirth === 'object' && submissionData.personalInfo?.dateOfBirth !== null
+                            ? `${submissionData.personalInfo.dateOfBirth.day || ''}/${submissionData.personalInfo.dateOfBirth.month || ''}/${submissionData.personalInfo.dateOfBirth.year || ''}`
                             : 'N/A'
                         }</div>
                         <div><strong>Phone:</strong> {submissionData.workplaceInfo?.phoneNumber || 'N/A'}</div>
@@ -267,7 +355,7 @@ const AdminPanel = () => {
                     <div className="detail-section">
                       <h3>Service History</h3>
                       {submissionData.serviceHistory && submissionData.serviceHistory.length > 0 ? (
-                        submissionData.serviceHistory.map((service: any, index: number) => (
+                        submissionData.serviceHistory.map((service, index) => (
                           <div key={index} className="service-item">
                             <strong>Office {service.serialNumber}:</strong> {service.officeName || 'N/A'}
                           </div>
@@ -327,4 +415,3 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
-

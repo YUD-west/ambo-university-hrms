@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hrApi } from '../services/api';
 import type { DashboardStats, Employee, LeaveRequest } from '../types/hrTypes';
@@ -42,9 +42,10 @@ const Dashboard = () => {
       }
 
       setLastUpdated(new Date());
-    } catch (error: any) {
-      console.error('Error fetching dashboard data:', error);
-      setError(error.message || 'Failed to load dashboard data. Please check your connection.');
+    } catch (err: unknown) {
+      console.error('Error fetching dashboard data:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to load dashboard data. Please check your connection.';
+      setError(msg);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { SocialSecurityFormData } from '../types/socialSecurityTypes';
 import { formApi } from '../services/api';
 import './SocialSecurityForm.css';
@@ -79,7 +80,7 @@ const SocialSecurityForm = () => {
     }));
   };
 
-  const updateServiceHistory = (index: number, field: string, value: any) => {
+  const updateServiceHistory = (index: number, field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       serviceHistory: prev.serviceHistory.map((service, i) =>
@@ -105,7 +106,7 @@ const SocialSecurityForm = () => {
     }));
   };
 
-  const updateChild = (index: number, field: string, value: any) => {
+  const updateChild = (index: number, field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       children: prev.children.map((child, i) =>
@@ -203,6 +204,14 @@ const SocialSecurityForm = () => {
 
   return (
     <div className="form-container">
+      <div className="form-top-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#ffffff', padding: '0.875rem 1.25rem', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+        <Link to="/" style={{ color: '#0f4c75', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>← Back to Portal Home</Link>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Link to="/hr" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>📊 HR Dashboard</Link>
+          <Link to="/form" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>📋 Life History Form</Link>
+          <Link to="/admin" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>⚙️ Admin Panel</Link>
+        </div>
+      </div>
       {submitStatus.type && (
         <div className={`notification ${submitStatus.type}`}>
           <div className="notification-content">

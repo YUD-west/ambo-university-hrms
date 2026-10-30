@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   Employee,
   Department,
   Attendance,
@@ -535,21 +535,31 @@ export const hrApi = {
   },
 };
 
+// ==================== FORM SUBMISSION TYPES ====================
+export interface FormSubmissionRecord {
+  id: string;
+  type: 'life-history' | 'social-security';
+  data: Record<string, unknown>;
+  submittedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submittedBy?: string;
+}
+
 // ==================== FORM API FUNCTIONS ====================
 export const formApi = {
-  submitLifeHistory: async (formData: unknown): Promise<ApiResponse<unknown>> => {
-    const res = await request('/forms/life-history', {
+  submitLifeHistory: async (formData: unknown): Promise<ApiResponse<FormSubmissionRecord>> => {
+    const res = await request<FormSubmissionRecord>('/forms/life-history', {
       method: 'POST',
       body: JSON.stringify(formData),
     });
-    if (res.success) return res;
+    if (res.success && res.data) return res;
 
     // Fallback save in localStorage
-    const subs = getLocal<any[]>(KEYS.SUBMISSIONS, []);
-    const newSub = {
+    const subs = getLocal<FormSubmissionRecord[]>(KEYS.SUBMISSIONS, []);
+    const newSub: FormSubmissionRecord = {
       id: `SUB-${Date.now()}`,
       type: 'life-history',
-      data: formData,
+      data: (formData as Record<string, unknown>) || {},
       submittedAt: new Date().toISOString(),
       status: 'pending',
     };
@@ -558,18 +568,18 @@ export const formApi = {
     return { success: true, data: newSub, message: 'Life history form submitted successfully' };
   },
 
-  submitSocialSecurity: async (formData: unknown): Promise<ApiResponse<unknown>> => {
-    const res = await request('/forms/social-security', {
+  submitSocialSecurity: async (formData: unknown): Promise<ApiResponse<FormSubmissionRecord>> => {
+    const res = await request<FormSubmissionRecord>('/forms/social-security', {
       method: 'POST',
       body: JSON.stringify(formData),
     });
-    if (res.success) return res;
+    if (res.success && res.data) return res;
 
-    const subs = getLocal<any[]>(KEYS.SUBMISSIONS, []);
-    const newSub = {
+    const subs = getLocal<FormSubmissionRecord[]>(KEYS.SUBMISSIONS, []);
+    const newSub: FormSubmissionRecord = {
       id: `SUB-SS-${Date.now()}`,
       type: 'social-security',
-      data: formData,
+      data: (formData as Record<string, unknown>) || {},
       submittedAt: new Date().toISOString(),
       status: 'pending',
     };
@@ -578,53 +588,66 @@ export const formApi = {
     return { success: true, data: newSub, message: 'Social security form submitted successfully' };
   },
 
-  getSubmissions: async (params?: { type?: string; status?: string }): Promise<ApiResponse<unknown[]>> => {
+  getSubmissions: async (params?: { type?: string; status?: string }): Promise<ApiResponse<FormSubmissionRecord[]>> => {
     const query = new URLSearchParams(params as Record<string, string>).toString();
-    const res = await request<unknown[]>(`/forms/submissions${query ? `?${query}` : ''}`);
+    const res = await request<FormSubmissionRecord[]>(`/forms/submissions${query ? `?${query}` : ''}`);
     if (res.success && res.data) return res;
 
-    let subs = getLocal<any[]>(KEYS.SUBMISSIONS, []);
-    if (params?.type) subs = subs.filter(s => s.type === params.type);
-    if (params?.status) subs = subs.filter(s => s.status === params.status);
+    let subs = getLocal<FormSubmissionRecord[]>(KEYS.SUBMISSIONS, []);
+    if (params?.type && params.type !== 'all') subs = subs.filter(s => s.type === params.type);
+    if (params?.status && params.status !== 'all') subs = subs.filter(s => s.status === params.status);
     return { success: true, data: subs };
   },
 };
 
 // ==================== ADMIN API FUNCTIONS ====================
 export const adminApi = {
-  getPendingSubmissions: async (type?: string): Promise<ApiResponse<unknown[]>> => {
-    const res = await request<unknown[]>(`/admin/submissions/pending${type ? `?type=${type}` : ''}`);
+  getSubmissions: async (params?: { type?: string; status?: string }): Promise<ApiResponse<FormSubmissionRecord[]>> => {
+    const query = new URLSearchParams(params as Record<string, string>).toString();
+    const res = await request<FormSubmissionRecord[]>(`/admin/submissions${query ? `?${query}` : ''}`);
     if (res.success && res.data) return res;
 
-    let subs = getLocal<any[]>(KEYS.SUBMISSIONS, []);
-    subs = subs.filter(s => s.status === 'pending');
-    if (type) subs = subs.filter(s => s.type === type);
+    let subs = getLocal<FormSubmissionRecord[]>(KEYS.SUBMISSIONS, []);
+    if (params?.type && params.type !== 'all') subs = subs.filter(s => s.type === params.type);
+    if (params?.status && params.status !== 'all') subs = subs.filter(s => s.status === params.status);
     return { success: true, data: subs };
   },
 
-  approveSubmission: async (id: string): Promise<ApiResponse<unknown>> => {
-    const res = await request(`/admin/submissions/${id}/approve`, { method: 'PUT' });
-    if (res.success) return res;
+  getPendingSubmissions: async (type?: string): Promise<ApiResponse<FormSubmissionRecord[]>> => {
+    const res = await request<FormSubmissionRecord[]>(`/admin/submissions/pending${type ? `?type=${type}` : ''}`);
+    if (res.success && res.data) return res;
 
-    const subs = getLocal<any[]>(KEYS.SUBMISSIONS, []);
+    let subs = getLocal<FormSubmissionRecord[]>(KEYS.SUBMISSIONS, []);
+    subs = subs.filter(s => s.status === 'pending');
+    if (type && type !== 'all') subs = subs.filter(s => s.type === type);
+    return { success: true, data: subs };
+  },
+
+  approveSubmission: async (id: string): Promise<ApiResponse<FormSubmissionRecord>> => {
+    const res = await request<FormSubmissionRecord>(`/admin/submissions/${id}/approve`, { method: 'PUT' });
+    if (res.success && res.data) return res;
+
+    const subs = getLocal<FormSubmissionRecord[]>(KEYS.SUBMISSIONS, []);
     const idx = subs.findIndex(s => s.id === id);
     if (idx !== -1) {
       subs[idx].status = 'approved';
       setLocal(KEYS.SUBMISSIONS, subs);
+      return { success: true, data: subs[idx], message: 'Submission approved' };
     }
-    return { success: true, message: 'Submission approved' };
+    return { success: false, message: 'Submission not found' };
   },
 
-  rejectSubmission: async (id: string): Promise<ApiResponse<unknown>> => {
-    const res = await request(`/admin/submissions/${id}/reject`, { method: 'PUT' });
-    if (res.success) return res;
+  rejectSubmission: async (id: string): Promise<ApiResponse<FormSubmissionRecord>> => {
+    const res = await request<FormSubmissionRecord>(`/admin/submissions/${id}/reject`, { method: 'PUT' });
+    if (res.success && res.data) return res;
 
-    const subs = getLocal<any[]>(KEYS.SUBMISSIONS, []);
+    const subs = getLocal<FormSubmissionRecord[]>(KEYS.SUBMISSIONS, []);
     const idx = subs.findIndex(s => s.id === id);
     if (idx !== -1) {
       subs[idx].status = 'rejected';
       setLocal(KEYS.SUBMISSIONS, subs);
+      return { success: true, data: subs[idx], message: 'Submission rejected' };
     }
-    return { success: true, message: 'Submission rejected' };
+    return { success: false, message: 'Submission not found' };
   },
 };

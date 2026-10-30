@@ -1,9 +1,12 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 import './Home.css';
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   return (
     <div className="home-container">
@@ -11,8 +14,8 @@ const Home = () => {
       <nav className="navbar">
         <div className="nav-container">
           <div className="logo">
-            <h2>Federal Government Employees</h2>
-            <p>Federal Government Employees Portal</p>
+            <h2>Ambo University</h2>
+            <p>Federal Government Employees Portal & HRMS</p>
           </div>
           <div className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
             <a href="#home" onClick={() => setIsMenuOpen(false)}>Home</a>
@@ -21,6 +24,10 @@ const Home = () => {
             <Link to="/hr" onClick={() => setIsMenuOpen(false)}>HR Portal</Link>
             <Link to="/admin" onClick={() => setIsMenuOpen(false)}>Admin</Link>
             <a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</a>
+            <div className="nav-extra-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
           </div>
           <button 
             className="menu-toggle"
@@ -237,14 +244,22 @@ const Home = () => {
               </div>
             </div>
             <div className="contact-form">
-              <form onSubmit={(e) => e.preventDefault()}>
-                <div className="form-row">
-                  <input type="text" placeholder="Your Name" required />
-                  <input type="email" placeholder="Your Email" required />
-                </div>
-                <input type="text" placeholder="Subject" required />
-                <textarea placeholder="Your Message" rows={5} required></textarea>
-                <button type="submit" className="btn btn-primary">Send Message</button>
+              <form onSubmit={(e) => { e.preventDefault(); setContactSubmitted(true); }}>
+                {contactSubmitted ? (
+                  <div style={{ padding: '2rem', background: '#d1fae5', color: '#065f46', borderRadius: '10px', textAlign: 'center', fontWeight: 600 }}>
+                    ✅ Thank you! Your message has been sent to Ambo University HR Department. We will respond promptly.
+                  </div>
+                ) : (
+                  <>
+                    <div className="form-row">
+                      <input type="text" placeholder="Your Name" required />
+                      <input type="email" placeholder="Your Email" required />
+                    </div>
+                    <input type="text" placeholder="Subject" required />
+                    <textarea placeholder="Your Message" rows={5} required></textarea>
+                    <button type="submit" className="btn btn-primary">Send Message</button>
+                  </>
+                )}
               </form>
             </div>
           </div>
@@ -256,7 +271,7 @@ const Home = () => {
         <div className="container">
           <div className="footer-content">
             <div className="footer-section">
-              <h3>Federal Government Employees</h3>
+              <h3>Ambo University</h3>
               <p>Federal Government Employees Portal & HRMS</p>
             </div>
             <div className="footer-section">
