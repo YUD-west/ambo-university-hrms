@@ -1,6 +1,7 @@
 /**
  * Ambo University HRMS - Enterprise Authentication & RBAC Service
- * Implements PBKDF2-SHA256 client/server cryptographic validation and role-based access control.
+ * Implements PBKDF2-SHA256 client/server cryptographic validation,
+ * brute-force rate-limiting, and role-based access control.
  */
 
 export type UserRole = 'admin' | 'hr';
@@ -30,6 +31,7 @@ export interface LoginResult {
 const STORAGE_KEYS = {
   SESSION: 'ambo_hrms_auth_session',
   USERS: 'ambo_hrms_provisioned_accounts',
+  RATE_LIMIT: 'ambo_hrms_auth_rate_limit',
 };
 
 const SALT_STRING = import.meta.env.VITE_AUTH_SALT || 'ambo_univ_hrms_salt_sec_2026';
@@ -110,10 +112,41 @@ function generateToken(user: AuthUser, durationMs: number = 24 * 60 * 60 * 1000)
 
 export const authService = {
   /**
+   * Check whether client is currently locked out by rate limiting
+   */
+  getLockoutStatus(): { isLocked: boolean; remainingSec: number } {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.RATE_LIMIT);
+      if (!raw) return { isLocked: false, remainingSec: 0 };
+      const data = JSON.parse(raw);
+      if (data.lockoutUntil && Date.now() < data.lockoutUntil) {
+        const remainingSec = Math.ceil((data.lockoutUntil - Date.now()) / 1000);
+        return { isLocked: true, remainingSec };
+      }
+      return { isLocked: false, remainingSec: 0 };
+    } catch {
+      return { isLocked: false, remainingSec: 0 };
+    }
+  },
+
+  /**
    * Authenticate with email & password against hashed provisioned records
+   * Includes anti-brute-force rate limiting and verification delay
    */
   async login(email: string, password: string): Promise<LoginResult> {
     try {
+      // 1. Anti-cracking lockout verification
+      const lockout = this.getLockoutStatus();
+      if (lockout.isLocked) {
+        return {
+          success: false,
+          message: `Security Lockout Active: Too many failed login attempts. System locked for ${lockout.remainingSec}s to prevent unauthorized access.`,
+        };
+      }
+
+      // 2. Throttling delay to prevent automated high-speed cracking
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const normalizedEmail = email.trim().toLowerCase();
       const inputHash = await hashPassword(password);
 
@@ -131,12 +164,43 @@ export const authService = {
       }
 
       const match = accounts.find((a) => a.email.toLowerCase() === normalizedEmail);
+
+      // 3. Handle credential mismatch
       if (!match || match.passwordHash !== inputHash) {
+        // Record failed attempt
+        let attempts = 1;
+        try {
+          const raw = localStorage.getItem(STORAGE_KEYS.RATE_LIMIT);
+          if (raw) {
+            const data = JSON.parse(raw);
+            attempts = (data.attempts || 0) + 1;
+          }
+        } catch {
+          attempts = 1;
+        }
+
+        const shouldLock = attempts >= 5;
+        const lockoutUntil = shouldLock ? Date.now() + 60000 : null;
+        localStorage.setItem(
+          STORAGE_KEYS.RATE_LIMIT,
+          JSON.stringify({ attempts, lockoutUntil })
+        );
+
+        if (shouldLock) {
+          return {
+            success: false,
+            message: 'Security Alert: Maximum invalid attempts reached. System locked for 60 seconds to protect against cracking.',
+          };
+        }
+
         return {
           success: false,
-          message: 'Invalid email or password. Please verify your credentials and try again.',
+          message: `Invalid credentials. Attempt ${attempts} of 5 before temporary security lockout.`,
         };
       }
+
+      // 4. Successful authentication - Clear failed attempt rate limit
+      localStorage.removeItem(STORAGE_KEYS.RATE_LIMIT);
 
       const user: AuthUser = {
         id: match.id,

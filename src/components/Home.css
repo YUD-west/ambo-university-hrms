@@ -726,3 +726,83 @@
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff !important;
 }
+
+
+/* Authenticated User Nav Actions */
+.nav-auth-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-authenticated-dash-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  background: linear-gradient(135deg, #0f4c75 0%, #1e3a8a 100%);
+  color: #ffffff !important;
+  border-radius: 6px;
+  font-weight: 600 !important;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.nav-authenticated-dash-btn:hover {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+  transform: translateY(-1px);
+}
+
+.nav-logout-btn {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-logout-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+[data-theme='dark'] .nav-logout-btn {
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+
+[data-theme='dark'] .nav-logout-btn:hover {
+  background: #450a0a;
+}
+
+/* Stealth Gateway Link in Footer */
+.stealth-gate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  opacity: 0.2;
+  color: #94a3b8;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  user-select: none;
+  padding: 4px;
+}
+
+.stealth-gate:hover {
+  opacity: 0.85;
+  transform: scale(1.15);
+  color: #ffffff;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

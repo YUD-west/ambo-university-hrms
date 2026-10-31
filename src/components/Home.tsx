@@ -1,14 +1,29 @@
-import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import './Home.css';
 
 const Home = () => {
   const { t } = useTranslation();
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
+
+  // Stealth keyboard shortcut: Press Ctrl + Shift + L to navigate to secure authentication portal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+        e.preventDefault();
+        navigate('/login');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
 
   const handleContactSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -17,12 +32,12 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      {/* Navigation - Public Facing (NO visible Admin or HR links) */}
+      {/* Navigation - Public Facing (NO visible Admin or HR links directly on public website) */}
       <nav className="navbar">
         <div className="nav-container">
           <div className="logo">
             <h2>{t('nav.brandTitle', 'Ambo University')}</h2>
-            <p>{t('nav.brandSubtitle', 'Federal Government Employees Portal & HRMS')}</p>
+            <p>{t('nav.brandSubtitle', 'Federal Government Employees Documentation Portal')}</p>
           </div>
 
           <div className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
@@ -38,11 +53,29 @@ const Home = () => {
             <a href="#contact" onClick={() => setIsMenuOpen(false)}>
               {t('nav.contact', 'Contact')}
             </a>
-            
-            {/* Secure Staff Login Link instead of visible Admin/HR dashboard links */}
-            <Link to="/login" className="nav-staff-login-btn" onClick={() => setIsMenuOpen(false)}>
-              🔐 {t('nav.login', 'Staff Login')}
-            </Link>
+
+            {/* Authenticated User Session Pill - Only appears AFTER successful authentication */}
+            {isAuthenticated && user && (
+              <div className="nav-auth-user">
+                <Link
+                  to={user.role === 'admin' ? '/admin' : '/hr/dashboard'}
+                  className="nav-authenticated-dash-btn"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  ⚡ {user.role === 'admin' ? 'Admin Review' : 'HR Portal'}
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="nav-logout-btn"
+                  title="Sign Out"
+                >
+                  🚪 {t('nav.logout', 'Log Out')}
+                </button>
+              </div>
+            )}
 
             <div className="nav-extra-actions">
               <LanguageSwitcher />
@@ -70,12 +103,12 @@ const Home = () => {
               <span className="gradient-text">{t('home.heroTitle', 'Federal Government Employees Portal')}</span>
             </h1>
             <h2 className="hero-subtitle">
-              {t('home.heroSubtitle', 'Digital HR & Employee Information Management System')}
+              {t('home.heroSubtitle', 'Digital Employee Information & Documentation Portal')}
             </h2>
             <p className="hero-description">
               {t(
                 'home.heroDescription',
-                'A secure, modern, multilingual platform for Ambo University and Ethiopian Federal Government employees. Streamlining employee life history registration, pension documentation, attendance tracking, and leave administration.'
+                'A secure, modern, multilingual platform for Ambo University and Ethiopian Federal Government employees. Streamlining employee life history registration, pension documentation, and official public service records.'
               )}
             </p>
 
@@ -92,10 +125,6 @@ const Home = () => {
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </Link>
-
-              <Link to="/login" className="btn btn-secondary">
-                {t('home.ctaStaffLogin', 'Access Staff Portal')}
               </Link>
             </div>
           </div>
@@ -132,7 +161,7 @@ const Home = () => {
       <section className="features" id="about">
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">{t('home.whyChoose', 'Why Choose Our Digital HRMS?')}</h2>
+            <h2 className="section-title">{t('home.whyChoose', 'Why Choose Our Digital Documentation Portal?')}</h2>
             <p className="section-subtitle">
               {t('home.whyChooseSubtitle', 'Engineered for compliance, efficiency, and federal employee service excellence.')}
             </p>
@@ -248,7 +277,7 @@ const Home = () => {
           <div className="section-header">
             <h2 className="section-title">{t('home.contactTitle', 'Institutional Support & Contact')}</h2>
             <p className="section-subtitle">
-              {t('home.contactSubtitle', 'Get in touch with the Ambo University Human Resources Directorate.')}
+              {t('home.contactSubtitle', 'Get in touch with Ambo University Administration.')}
             </p>
           </div>
 
@@ -265,7 +294,7 @@ const Home = () => {
                 <div className="contact-icon">📧</div>
                 <div>
                   <h4>{t('home.contactEmailTitle', 'Official Email')}</h4>
-                  <p>hr@ambou.edu.et</p>
+                  <p>contact@ambou.edu.et</p>
                 </div>
               </div>
               <div className="contact-item">
@@ -281,7 +310,7 @@ const Home = () => {
               <form onSubmit={handleContactSubmit}>
                 {contactSubmitted ? (
                   <div className="contact-success-box" role="status">
-                    ✅ {t('home.contactSuccessMsg', 'Thank you! Your message has been sent to Ambo University HR Directorate.')}
+                    ✅ {t('home.contactSuccessMsg', 'Thank you! Your message has been sent to Ambo University Administration.')}
                   </div>
                 ) : (
                   <>
@@ -306,7 +335,7 @@ const Home = () => {
                       aria-label="Subject"
                     />
                     <textarea
-                      placeholder={t('home.contactMessagePlaceholder', 'How can our HR Directorate assist you?')}
+                      placeholder={t('home.contactMessagePlaceholder', 'How can our administration assist you?')}
                       rows={5}
                       required
                       aria-label="Message"
@@ -328,7 +357,7 @@ const Home = () => {
           <div className="footer-content">
             <div className="footer-section">
               <h3>{t('nav.brandTitle', 'Ambo University')}</h3>
-              <p>{t('home.footerDescription', 'Official digital human resource and public servant documentation portal for Ambo University.')}</p>
+              <p>{t('home.footerDescription', 'Official digital employee and public servant documentation portal for Ambo University.')}</p>
             </div>
 
             <div className="footer-section">
@@ -346,7 +375,6 @@ const Home = () => {
               <ul>
                 <li><Link to="/form">{t('nav.lifeHistoryForm', 'Life History Form')}</Link></li>
                 <li><Link to="/social-security">{t('nav.socialSecurityForm', 'Social Security Form')}</Link></li>
-                <li><Link to="/login">{t('nav.login', 'Staff Portal Login')}</Link></li>
               </ul>
             </div>
 
@@ -361,7 +389,17 @@ const Home = () => {
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; {new Date().getFullYear()} {t('home.footerLegal', 'Ambo University HRMS. All rights reserved.')}</p>
+            <p>&copy; {new Date().getFullYear()} {t('home.footerLegal', 'Ambo University. All rights reserved.')}</p>
+            
+            {/* Discreet, unobtrusive gateway link */}
+            <Link
+              to="/login"
+              className="stealth-gate"
+              title="System Gateway (or press Ctrl+Shift+L)"
+              aria-label="System Gateway"
+            >
+              🔒
+            </Link>
           </div>
         </div>
       </footer>

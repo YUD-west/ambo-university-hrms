@@ -104,12 +104,6 @@ const FloatingActions = () => {
           label: t('nav.socialSecurityForm', 'Social Security Form'),
           action: () => navigate('/social-security'),
         },
-        {
-          id: 'login',
-          icon: '🔐',
-          label: t('nav.login', 'Staff Portal Login'),
-          action: () => navigate('/login'),
-        },
       ];
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -147,7 +141,7 @@ const FloatingActions = () => {
               setShowNotifications(!showNotifications);
               setIsMenuOpen(false);
             }}
-            title={t('floating.notifications', 'Notifications')}
+            title={t('floating.notifications', 'HR Notifications')}
           >
             <span>🔔</span>
             {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
